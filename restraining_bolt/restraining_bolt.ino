@@ -1,4 +1,3 @@
-
 /* Copyright (C) 2020 Vincent Miceli - All Rights Reserved.
  * You may use, distribute, and modify this code under the
  * terms of the CC-BY-4.0 license. The author and publisher make no claims to the 
@@ -19,16 +18,34 @@
   * 
   * 5/20/2020 V1
   */
-
-  
-#include <mavlink.h>
-
+#include <Arduino.h>
+#include <mavlink2.h>
 
 // Mavlink variables
 unsigned long previousMillisMAVLink = 0;     // will store last time MAVLink was transmitted and listened
 unsigned long nextIntervalMAVLink = 1000;  // next interval to count
 const int num_hbs = 60;                      // # of heartbeats to wait before activating STREAMS from Pixhawk. 60 = one minute.
 int num_hbs_pasados = num_hbs;
+
+// MAVLink config
+/* The default UART header for your MCU */ 
+int sysid = 4;                   /// ID 4 for this ground station. 1 FC, 255 ground station
+int compid =  MAV_COMP_ID_PERIPHERAL;                /// The component sending the message
+int type = MAV_TYPE_ONBOARD_CONTROLLER;         /// This system is a companion computer  
+
+// Define the system type, in this case an airplane -> on-board controller
+uint8_t system_type = MAV_TYPE_GENERIC;
+uint8_t autopilot_type = MAV_AUTOPILOT_INVALID;
+
+uint8_t system_mode = MAV_MODE_PREFLIGHT; ///< Booting up
+uint32_t custom_mode = 0;                 ///< Custom mode, can be defined by user/adopter
+uint8_t system_state = MAV_STATE_STANDBY; ///< System ready for flight
+
+// Initialize the required buffers
+mavlink_message_t msg;
+mavlink_status_t status;
+uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+uint16_t len = 0;
 
 // Launch the serial port in setup
 void setup() {
@@ -38,29 +55,7 @@ void setup() {
 
 // Loop your program
 void loop() {
-  // MAVLink config
-  /* The default UART header for your MCU */ 
-  int sysid = 4;                   /// ID 4 for this ground station. 1 FC, 255 ground station
-  int compid =  MAV_COMP_ID_PERIPHERAL;                /// The component sending the message
-  int type = MAV_TYPE_ONBOARD_CONTROLLER;         /// This system is a companion computer  
- 
-  // Define the system type, in this case an airplane -> on-board controller
-  uint8_t system_type = MAV_TYPE_GENERIC;
-  uint8_t autopilot_type = MAV_AUTOPILOT_INVALID;
- 
-  uint8_t system_mode = MAV_MODE_PREFLIGHT; ///< Booting up
-  uint32_t custom_mode = 0;                 ///< Custom mode, can be defined by user/adopter
-  uint8_t system_state = MAV_STATE_STANDBY; ///< System ready for flight
 
-  // Initialize the required buffers
-  mavlink_message_t msg;
-  uint8_t buf[MAVLINK_MAX_PACKET_LEN];
- 
-  // Pack the message
-  mavlink_msg_heartbeat_pack(1,0, &msg, type, autopilot_type, system_mode, custom_mode, system_state);
- 
-  // Copy the message to the send buffer
-  uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
  
   // Send the message with the standard UART send function
   // uart0_send might be named differently depending on
@@ -69,6 +64,12 @@ void loop() {
   if (currentMillisMAVLink - previousMillisMAVLink >= nextIntervalMAVLink) {
     // Timing variables
     previousMillisMAVLink = currentMillisMAVLink;
+    
+    // Pack the message
+    mavlink_msg_heartbeat_pack(1,0, &msg, type, autopilot_type, system_mode, custom_mode, system_state);
+    
+    // Copy the message to the send buffer
+    len = mavlink_msg_to_send_buffer(buf, &msg);
 
     Serial.write(buf, len);
 
@@ -87,8 +88,6 @@ void loop() {
 
 void request_data()
 {
-  mavlink_message_t msg;
-  uint8_t buf[MAVLINK_MAX_PACKET_LEN];
 
   // STREAMS that can be requested
   /*
@@ -129,14 +128,12 @@ void request_data()
      * 
      */
     mavlink_msg_request_data_stream_pack(2, 200, &msg, 1, 0, MAVStreams[i], MAVRates[i], 1);
-    uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
+    len = mavlink_msg_to_send_buffer(buf, &msg);
     Serial.write(buf, len);
   }
 }
 
 void receive_data() {
-  mavlink_message_t msg;
-  mavlink_status_t status;
 
   while(Serial.available()>0) {
     uint8_t c = Serial.read();
@@ -155,11 +152,7 @@ void receive_data() {
 
         case MAVLINK_MSG_ID_SYS_STATUS:  // #1: SYS_STATUS
           {
-            /* Message decoding: PRIMITIVE
-             *    mavlink_msg_sys_status_decode(const mavlink_message_t* msg, mavlink_sys_status_t* sys_status)
-             */
-            //mavlink_message_t* msg;
-            mavlink_sys_status_t sys_status;
+             mavlink_sys_status_t sys_status;
             mavlink_msg_sys_status_decode(&msg, &sys_status);
           }
           break;
