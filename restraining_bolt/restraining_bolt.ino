@@ -25,7 +25,7 @@
 #include <Arduino.h>
 #include <ArduinoLog.h>
 #include <Adafruit_NeoPixel.h>
-#include <mavlink2.h>
+#include <mavlink1.h>
 
 #define NEOPIXELPIN 8
 #define NEOPIXELCOUNT 1
@@ -55,12 +55,8 @@ uint32_t custom_mode = 0;                  // Custom mode, can be defined by use
 uint8_t system_state = MAV_STATE_STANDBY;  // System ready for flight
 
 // Initialize the required mavlink protocol buffers
-mavlink_message_t mavlinkMessage;
-mavlink_status_t status;
 uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
 uint16_t len = 0;
-HardwareSerial SerialMAV = Serial1;
-
 
 /*
 * Setup 
@@ -83,7 +79,7 @@ void setup()
   Log.begin(LOG_LEVEL_VERBOSE, &Serial);
 
   // MAVLink interface start
-  SerialMAV.begin(115200);
+  Serial1.begin(115200);
 }
 
 void trace(const char *text)
@@ -109,7 +105,8 @@ void loop()
   // check if enough time has past for next MAVLink heatbeat message
   if (currentMillisMAVLink - previousMAVLinkMilliseconds >= nextIntervalMAVLinkMilliseconds)
   {
-
+    mavlink_message_t mavlinkMessage;
+    
     // Store the current time for next loop
     previousMAVLinkMilliseconds = currentMillisMAVLink;
 
@@ -121,7 +118,7 @@ void loop()
 
     // Write buffer containing heartbeat message
     trace("writing heartbeat message to MAVLink");
-    SerialMAV.write(buffer, len);
+    Serial1.write(buffer, len);
 
     heartbeatCount++;
     if (heartbeatCount >= numberOfHeartBeatsToWait)
@@ -165,12 +162,13 @@ void requestMavLinkData()
   const int maxStreams = 2;
   const uint8_t MAVStreams[maxStreams] = {MAV_DATA_STREAM_EXTENDED_STATUS, MAV_DATA_STREAM_EXTRA1};
   const uint16_t MAVRates[maxStreams] = {0x02, 0x05};
+  mavlink_message_t mavlinkMessage;
 
   for (int i = 0; i < maxStreams; i++)
   {
     mavlink_msg_request_data_stream_pack(2, 200, &mavlinkMessage, 1, 0, MAVStreams[i], MAVRates[i], 1);
     len = mavlink_msg_to_send_buffer(buffer, &mavlinkMessage);
-    SerialMAV.write(buffer, len);
+    Serial1.write(buffer, len);
   }
 }
 
@@ -179,17 +177,20 @@ void receiveMavLinkData()
 
   trace("checking for MAVLink data");
 
-  while (SerialMAV.available() > 0)
+  while (Serial1.available() > 0)
   {
-    uint8_t c = SerialMAV.read();
+    mavlink_message_t mavlinkMessage;
+    mavlink_status_t status;
 
-    trace("received message over MAVLink");
+    uint8_t c = Serial1.read();
 
+    trace("received message over serial 1");
 
     // Try to get a new message
-    if (mavlink_parse_char(MAVLINK_COMM_0, c, &mavlinkMessage, &status) == MAVLINK_FRAMING_OK)
+   //  if (false)
+    if (mavlink_parse_char( MAVLINK_COMM_0, c, &mavlinkMessage, &status) == MAVLINK_FRAMING_OK)
     {
-/*
+
       // Handle message
       switch (mavlinkMessage.msgid)
       {
@@ -230,7 +231,9 @@ void receiveMavLinkData()
 
       default:
         break;
-      } */
+      } 
+    } else {
+      trace("received bad MAVLink message");
     }
    
   }
