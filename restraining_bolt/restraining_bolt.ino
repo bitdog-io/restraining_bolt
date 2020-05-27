@@ -1,277 +1,305 @@
-/* Copyright (C) 2020 Vincent Miceli - All Rights Reserved.
- * You may use, distribute, and modify this code under the
- * terms of the CC-BY-4.0 license. The author and publisher make no claims to the 
- * suitability of this software for any application. By using this
- * software the end-user accepts all responsibility and liability for its use.
- *
- * Please visit: https://creativecommons.org/licenses/by/4.0/ to get the latest version of this license.
- */
 
-/* This program uses MAVLink 2.0 protocol to monitor a flight controller using ArduPilot software. 
-  * It has been designed to work on an Adafruit Flora v3 https://www.adafruit.com/product/659 but it 
-  * may work on other Arduino base boards with enough memory. Serial port 1 of the Flora PCB must be connected to a serial 
-  * port of the flight controller. The serial port of the flight controller must be configured for Mavlink 2.0 
-  * protocol with a baud rate of 115200.
-  * 
-  * References used:
+/**
+  * \details 
+  * This program uses MAVLink 2.0 protocol to monitor a flight controller using ArduPilot software.
+  * It has been designed to work on an Teensy 4.1 but it may work on other Arduino
+  * base boards with enough memory. Serial port 1 of the Teensy PCB must be connected to a serial
+  * port of the flight controller. The serial port of the flight controller must be configured for Mavlink 2.0
+  * protocol with a baud rate of 57600. 
+  * GPIO Pin X will produce PWM pulses at 1800hz when status is good. It will produce 900hz or less when a fly away
+  * or other problem is detected.
+  *
+  * \see
   * MAVLink for Dummies: https://api.ning.com/files/i*tFWQTF2R*7Mmw7hksAU-u9IABKNDO9apguOiSOCfvi2znk1tXhur0Bt00jTOldFvob-Sczg3*lDcgChG26QaHZpzEcISM5/MAVLINK_FOR_DUMMIESPart1_v.1.1.pdf
   * Arduino with MAVLink https://github.com/tmaxxdd/arduino-with-mavlink
-  * 
-  * GPIO Pin X will produce PWM pulses at 1800hz when status is good. It will produce 900hz or less when a fly away 
-  * or other problem is detected.
-  * 
-  * 5/20/2020 V1
+  * MAVLink message documentation https://mavlink.io/en/messages/common.html
+  * TaskScheduler https://github.com/arkhipenko/TaskScheduler
+  * \author Vincent Miceli
+  *
+  * \copyright  CC-BY-4.0
+  *
   */
-#include <Arduino.h>
-#include <ArduinoLog.h>
-#include <Adafruit_NeoPixel.h>
-#include <mavlink1.h>
 
-#define NEOPIXELPIN 8
-#define NEOPIXELCOUNT 1
-#define LEDPIN 7
 
-Adafruit_NeoPixel neopixels;
+#include <SD_t3.h>
+#include <SD.h>
+#include <mavlink_2_ardupilot.h>
 
-// MavLink communication variables
-unsigned long previousMAVLinkMilliseconds = 0;        // will store last time MAVLink was transmitted and listened
-unsigned long nextIntervalMAVLinkMilliseconds = 1000; // next interval to count
-const int numberOfHeartBeatsToWait = 60;              // # of heartbeats to wait before activating STREAMS from Pixhawk. 60 = one minute.
-int heartbeatCount = numberOfHeartBeatsToWait;        // Initialize so the first heartbeat message happens right away
-unsigned long currentMillisMAVLink = 0;               // used for timing heartbeats
 
-// MAVLink config
-int sysid = 4;                          // ID 4 for this companion computer. 1 pixhawk, 255 ground station
-int compid = MAV_COMP_ID_PERIPHERAL;    // The component sending the message
-int type = MAV_TYPE_ONBOARD_CONTROLLER; // This system is a companion computer
 
-// Define the system type -> on-board controller
-uint8_t system_type = MAV_TYPE_ONBOARD_CONTROLLER;
-uint8_t autopilot_type = MAV_AUTOPILOT_INVALID;
 
-// Initialize mavlink state and mode
-uint8_t system_mode = MAV_MODE_AUTO_ARMED; // Ready to go
-uint32_t custom_mode = 0;                  // Custom mode, can be defined by user/adopter
-uint8_t system_state = MAV_STATE_STANDBY;  // System ready for flight
+constexpr auto LEDPIN = 13;
 
-// Initialize the required mavlink protocol buffers
-uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-uint16_t len = 0;
+// Test File
+File testFile;
+const int chipSelect = BUILTIN_SDCARD;
+const char* filename = "test.log";
+bool fileDone = false;
+
+
+
+
+
+
+
+
 
 /*
-* Setup 
+* Setup
 * Initialize onboard neopixel, onboard led, and serial ports
 */
 void setup()
 {
+	//Serial.begin( 115200 );
 
-  // Initialize onboard neopixel
-  neopixels = Adafruit_NeoPixel(NEOPIXELCOUNT, NEOPIXELPIN, NEO_GRB + NEO_KHZ800);
-  neopixels.begin();
-  neopixels.setBrightness(90);
-  neopixels.show();
+	//// MAVLink interface start
+	//Serial1.begin( 115200 );
 
-  // Inialize onboard led
-  pinMode(LEDPIN, OUTPUT);
 
-  // Set up USB serial port
-  Serial.begin(115200);
-  Log.begin(LOG_LEVEL_VERBOSE, &Serial);
+ // 	// Inialize onboard led
+	//pinMode( LEDPIN, OUTPUT );
+	//digitalWrite( LEDPIN, HIGH );  // turn the LED on by making the voltage HIGH
+	//
+	// // Test file
+	//Serial.print( "Initializing SD card..." );
 
-  // MAVLink interface start
-  Serial1.begin(115200);
+	//if ( !SD.begin( chipSelect ) ) {
+	//	Serial.printf( "initialization failed!\r\n" );
+	//	return;
+	//}
+	//Serial.println( "initialization done." );
+
+	//if ( SD.exists( filename ) ) {
+	//	Serial.printf( "%s exists.\r\n", filename );
+	//}
+	//else {
+	//	Serial.printf( "%s doesn't exist.", filename );
+	//}
+
+	//// open a new file and immediately close it:
+	//Serial.printf( "Opening %s...\r\n", filename );
+	//testFile = SD.open( filename, FILE_WRITE );
+	//testFile.close();
+
+
 }
 
-void trace(const char *text)
-{
-  Log.notice("%s%s", text, CR);
-}
-
-void blink()
-{
-  digitalWrite(LEDPIN, HIGH); // turn the LED on (HIGH is the voltage level)
-  delay(250);                // wait for a second
-  digitalWrite(LEDPIN, LOW);  // turn the LED off by making the voltage LOW
-  delay(250);                // wait for a second
-}
 
 void loop()
 {
 
-  blink();
-  // Get run time in milliseconds
-  currentMillisMAVLink = millis();
+	//// Get run time in milliseconds
+	//currentMillisMAVLink = millis();
 
-  // check if enough time has past for next MAVLink heatbeat message
-  if (currentMillisMAVLink - previousMAVLinkMilliseconds >= nextIntervalMAVLinkMilliseconds)
-  {
-    mavlink_message_t mavlinkMessage;
-    
-    // Store the current time for next loop
-    previousMAVLinkMilliseconds = currentMillisMAVLink;
+	//// check if enough time has past for next MAVLink heatbeat message
+	//if ( currentMillisMAVLink - previousMAVLinkMilliseconds >= nextIntervalMAVLinkMilliseconds )
+	//{
+	//	mavlink_message_t mavlinkMessage;
 
-    // Pack the MAVLink heartbeat message
-    mavlink_msg_heartbeat_pack(sysid, compid, &mavlinkMessage, type, autopilot_type, system_mode, custom_mode, system_state);
+	//	// Store the current time for next loop
+	//	previousMAVLinkMilliseconds = currentMillisMAVLink;
 
-    // Copy the message to the send buffer
-    len = mavlink_msg_to_send_buffer(buffer, &mavlinkMessage);
+	//	// Pack the MAVLink heartbeat message
+	//	mavlink_msg_heartbeat_pack( sysid, compid, &mavlinkMessage, type, autopilot_type, system_mode, custom_mode, system_state );
 
-    // Write buffer containing heartbeat message
-    trace("writing heartbeat message to MAVLink");
-    Serial1.write(buffer, len);
+	//	// Copy the message to the send buffer
+	//	len = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
 
-    heartbeatCount++;
-    if (heartbeatCount >= numberOfHeartBeatsToWait)
-    {
-      // Request streams from Pixhawk
-      trace("requesting data streams from flight controller");
-      requestMavLinkData();
-      heartbeatCount = 0;
-    }
-  }
+	//	// Write buffer containing heartbeat message
+	//	Serial1.write( buffer, len );
 
-  // Check reception buffer
-  receiveMavLinkData();
+	//	heartbeatCount++;
+	//	if ( heartbeatCount >= numberOfHeartBeatsToWait )
+	//	{
+	//		// Request streams from Pixhawk
 
-  //rainbowCycle(5);
+	//		requestMavLinkData();
+	//		heartbeatCount = 0;
+
+	//	}
+
+	//}
+
+
+	//receiveMavLinkData2( readByteFromFile );
 }
 
-void requestMavLinkData()
-{
 
-  /*
-   * Definitions are in common.h: enum MAV_DATA_STREAM
-   *   
-   * MAV_DATA_STREAM_ALL=0, // Enable all data streams
-   * MAV_DATA_STREAM_RAW_SENSORS=1, /* Enable IMU_RAW, GPS_RAW, GPS_STATUS packets.
-   * MAV_DATA_STREAM_EXTENDED_STATUS=2, /* Enable GPS_STATUS, CONTROL_STATUS, AUX_STATUS
-   * MAV_DATA_STREAM_RC_CHANNELS=3, /* Enable RC_CHANNELS_SCALED, RC_CHANNELS_RAW, SERVO_OUTPUT_RAW
-   * MAV_DATA_STREAM_RAW_CONTROLLER=4, /* Enable ATTITUDE_CONTROLLER_OUTPUT, POSITION_CONTROLLER_OUTPUT, NAV_CONTROLLER_OUTPUT.
-   * MAV_DATA_STREAM_POSITION=6, /* Enable LOCAL_POSITION, GLOBAL_POSITION/GLOBAL_POSITION_INT messages.
-   * MAV_DATA_STREAM_EXTRA1=10, /* Dependent on the autopilot
-   * MAV_DATA_STREAM_EXTRA2=11, /* Dependent on the autopilot
-   * MAV_DATA_STREAM_EXTRA3=12, /* Dependent on the autopilot
-   * MAV_DATA_STREAM_ENUM_END=13,
-   * 
-   * Data in PixHawk available in:
-   *  - Battery, amperage and voltage (SYS_STATUS) in MAV_DATA_STREAM_EXTENDED_STATUS
-   *  - Gyro info (IMU_SCALED) in MAV_DATA_STREAM_EXTRA1
-   */
-
-  // To be setup according to the needed information to be requested from the flight controller
-  const int maxStreams = 2;
-  const uint8_t MAVStreams[maxStreams] = {MAV_DATA_STREAM_EXTENDED_STATUS, MAV_DATA_STREAM_EXTRA1};
-  const uint16_t MAVRates[maxStreams] = {0x02, 0x05};
-  mavlink_message_t mavlinkMessage;
-
-  for (int i = 0; i < maxStreams; i++)
-  {
-    mavlink_msg_request_data_stream_pack(2, 200, &mavlinkMessage, 1, 0, MAVStreams[i], MAVRates[i], 1);
-    len = mavlink_msg_to_send_buffer(buffer, &mavlinkMessage);
-    Serial1.write(buffer, len);
-  }
-}
-
-void receiveMavLinkData()
-{
-
-  trace("checking for MAVLink data");
-
-  while (Serial1.available() > 0)
-  {
-    mavlink_message_t mavlinkMessage;
-    mavlink_status_t status;
-
-    uint8_t c = Serial1.read();
-
-    trace("received message over serial 1");
-
-    // Try to get a new message
-   //  if (false)
-    if (mavlink_parse_char( MAVLINK_COMM_0, c, &mavlinkMessage, &status) == MAVLINK_FRAMING_OK)
-    {
-
-      // Handle message
-      switch (mavlinkMessage.msgid)
-      {
-      case MAVLINK_MSG_ID_HEARTBEAT: // #0: Heartbeat
-      {
-        mavlink_heartbeat_t heartbeat;
-        mavlink_msg_heartbeat_decode(&mavlinkMessage, &heartbeat);
-      }
-      break;
-
-      case MAVLINK_MSG_ID_SYS_STATUS: // #1: SYS_STATUS
-      {
-        mavlink_sys_status_t sys_status;
-        mavlink_msg_sys_status_decode(&mavlinkMessage, &sys_status);
-      }
-      break;
-
-      case MAVLINK_MSG_ID_PARAM_VALUE: // #22: PARAM_VALUE
-      {
-        mavlink_param_value_t param_value;
-        mavlink_msg_param_value_decode(&mavlinkMessage, &param_value);
-      }
-      break;
-
-      case MAVLINK_MSG_ID_RAW_IMU: // #27: RAW_IMU
-      {
-        mavlink_raw_imu_t raw_imu;
-        mavlink_msg_raw_imu_decode(&mavlinkMessage, &raw_imu);
-      }
-      break;
-
-      case MAVLINK_MSG_ID_ATTITUDE: // #30
-      {
-        mavlink_attitude_t attitude;
-        mavlink_msg_attitude_decode(&mavlinkMessage, &attitude);
-      }
-      break;
-
-      default:
-        break;
-      } 
-    } else {
-      trace("received bad MAVLink message");
-    }
-   
-  }
-}
-
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait)
-{
-  uint16_t i, j;
-
-  for (j = 0; j < 256 * 5; j++)
-  { // 5 cycles of all colors on wheel
-    for (i = 0; i < neopixels.numPixels(); i++)
-    {
-      neopixels.setPixelColor(i, Wheel(((i * 256 / neopixels.numPixels()) + j) & 255));
-    }
-    neopixels.show();
-    delay(wait);
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos)
-{
-  WheelPos = 255 - WheelPos;
-  if (WheelPos < 85)
-  {
-    return neopixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  else if (WheelPos < 170)
-  {
-    WheelPos -= 85;
-    return neopixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  else
-  {
-    WheelPos -= 170;
-    return neopixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  }
-}
+//
+//void requestMavLinkData()
+//{
+//
+//	/*
+//	 * Definitions are in common.h: enum MAV_DATA_STREAM
+//	 *
+//	 * MAV_DATA_STREAM_ALL=0, // Enable all data streams
+//	 * MAV_DATA_STREAM_RAW_SENSORS=1, /* Enable IMU_RAW, GPS_RAW, GPS_STATUS packets.
+//	 * MAV_DATA_STREAM_EXTENDED_STATUS=2, /* Enable GPS_STATUS, CONTROL_STATUS, AUX_STATUS
+//	 * MAV_DATA_STREAM_RC_CHANNELS=3, /* Enable RC_CHANNELS_SCALED, RC_CHANNELS_RAW, SERVO_OUTPUT_RAW
+//	 * MAV_DATA_STREAM_RAW_CONTROLLER=4, /* Enable ATTITUDE_CONTROLLER_OUTPUT, POSITION_CONTROLLER_OUTPUT, NAV_CONTROLLER_OUTPUT.
+//	 * MAV_DATA_STREAM_POSITION=6, /* Enable LOCAL_POSITION, GLOBAL_POSITION/GLOBAL_POSITION_INT messages.
+//	 * MAV_DATA_STREAM_EXTRA1=10, /* Dependent on the autopilot
+//	 * MAV_DATA_STREAM_EXTRA2=11, /* Dependent on the autopilot
+//	 * MAV_DATA_STREAM_EXTRA3=12, /* Dependent on the autopilot
+//	 * MAV_DATA_STREAM_ENUM_END=13,
+//	 *
+//	 * Data in PixHawk available in:
+//	 *  - Battery, amperage and voltage (SYS_STATUS) in MAV_DATA_STREAM_EXTENDED_STATUS
+//	 *  - Gyro info (IMU_SCALED) in MAV_DATA_STREAM_EXTRA1
+//	 */
+//
+//	 // To be setup according to the needed information to be requested from the flight controller
+//	const int maxStreams = 1;
+//	const uint8_t MAVStreams[maxStreams] = { MAV_DATA_STREAM_ALL };
+//	const uint16_t MAVRates[maxStreams] = { 0x02 };
+//	mavlink_message_t mavlinkMessage;
+//
+//	for ( int i = 0; i < maxStreams; i++ )
+//	{
+//		mavlink_msg_request_data_stream_pack( 2, 200, &mavlinkMessage, 1, 0, MAVStreams[i], MAVRates[i], 1 );
+//		len = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
+//		Serial1.write( buffer, len );
+//	}
+//}
+//
+//
+//bool readByteFromFile( uint8_t* buffer ) {
+//	return testFile.readBytes( buffer, 1 ) == 1;
+//}
+//
+//bool readByteFromSerial( uint8_t* buffer ) {
+//
+//	if ( Serial1.available() > 0 )
+//	{
+//		return Serial1.readBytes( buffer, 1 ) == 1;
+//	}
+//
+//	return false;
+//}
+//
+//void receiveMavLinkData2( bool readByte( uint8_t* ) )
+//{
+//	ROVER_MODE roverMode = ROVER_MODE_INITIALIZING;
+//
+//	if ( !fileDone ) {
+//		testFile = SD.open( filename, FILE_READ );
+//		int loopCount = 0;
+//
+//
+//		while ( !fileDone )
+//		{
+//
+//			uint8_t byteBuffer;
+//
+//			while ( readByte( &byteBuffer ) )
+//			{
+//
+//				digitalWrite( LEDPIN, HIGH ); // turn the LED on (HIGH is the voltage level)
+//				mavlink_message_t mavlinkMessage;
+//				mavlink_status_t status;
+//
+//
+//
+//				// Try to get a new message
+//				if ( mavlink_parse_char( MAVLINK_COMM_1, byteBuffer, &mavlinkMessage, &status ) == MAVLINK_FRAMING_OK )
+//				{
+//					loopCount += 1;
+//					//Serial.printf("%d Got message id: #%d\r\n", loopCount, mavlinkMessage.msgid);
+//
+//
+//					// Handle message
+//					switch ( mavlinkMessage.msgid )
+//					{
+//						case MAVLINK_MSG_ID_HEARTBEAT: // #0: Heartbeat
+//							{
+//
+//								mavlink_heartbeat_t heartbeat;
+//								mavlink_msg_heartbeat_decode( &mavlinkMessage, &heartbeat );
+//
+//								if ( heartbeat.type == (uint8_t)MAV_TYPE_GROUND_ROVER )
+//									if ( heartbeat.custom_mode != (uint32_t)roverMode ) {
+//										Serial.printf( "Rover mode changed from %d to %d\r\n", roverMode, heartbeat.custom_mode );
+//										roverMode = (ROVER_MODE)heartbeat.custom_mode;
+//									}
+//							}
+//							break;
+//
+//						case MAVLINK_MSG_ID_SYS_STATUS: // #1: SYS_STATUS
+//							{
+//								mavlink_sys_status_t sys_status;
+//								mavlink_msg_sys_status_decode( &mavlinkMessage, &sys_status );
+//								//Serial.println("Got system status from MAVLink");
+//							}
+//							break;
+//
+//						case MAVLINK_MSG_ID_PARAM_VALUE: // #22: PARAM_VALUE
+//							{
+//								mavlink_param_value_t param_value;
+//								mavlink_msg_param_value_decode( &mavlinkMessage, &param_value );
+//								// Serial.println("Got parameter data from MAVLink");
+//							}
+//							break;
+//
+//						case MAVLINK_MSG_ID_RAW_IMU: // #27: RAW_IMU
+//							{
+//								mavlink_raw_imu_t imuRaw;
+//								mavlink_msg_raw_imu_decode( &mavlinkMessage, &imuRaw );
+//								//Serial.printf("IMU y gyro is %d\r\n", raw_imu.ygyro);
+//							}
+//							break;
+//
+//							case MAVLINK_MSG_ID_GPS_RAW_INT: // 24
+//							{
+//							    mavlink_gps_raw_int_t gpsRaw;
+//							    mavlink_msg_gps_raw_int_decode(&mavlinkMessage, &gpsRaw);
+//							    Serial.printf("GPS %d fix type is %d\r\n", mavlinkMessage.compid, gpsRaw.fix_type);
+//
+//							}
+//							break;
+//
+//						case MAVLINK_MSG_ID_GPS_INPUT: // 232
+//							{
+//								mavlink_gps_input_t gpsInput;
+//								mavlink_msg_gps_input_decode( &mavlinkMessage, &gpsInput );
+//								Serial.printf( "GPS %d fix type is %d\r\n", gpsInput.gps_id, gpsInput.fix_type );
+//
+//							}
+//							break;
+//
+//
+//						case MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT: // #62
+//							{
+//								mavlink_nav_controller_output_t navOutput;
+//								mavlink_msg_nav_controller_output_decode( &mavlinkMessage, &navOutput );
+//								Serial.printf( "Distance to waypont is %d\r\n", navOutput.wp_dist );
+//							}
+//							break;
+//
+//						case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
+//							{
+//								mavlink_mission_item_reached_t itemReached;
+//								mavlink_msg_mission_item_reached_decode( &mavlinkMessage, &itemReached );
+//								Serial.printf( "Destination reached: %d\r\n", itemReached.seq );
+//
+//							}
+//							break;
+//
+//						default:
+//							break;
+//
+//					}
+//
+//				}
+//
+//
+//			}
+//
+//			fileDone = true;
+//		}
+//
+//		testFile.close();
+//
+//		digitalWrite( LEDPIN, LOW );  // turn the LED off by making the voltage LOW
+//	}
+//
+//}
