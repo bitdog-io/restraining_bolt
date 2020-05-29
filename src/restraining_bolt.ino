@@ -1,6 +1,20 @@
 
 /**
   * \details
+
+  *
+  * \see
+  * MAVLink for Dummies: https://api.ning.com/files/i*tFWQTF2R*7Mmw7hksAU-u9IABKNDO9apguOiSOCfvi2znk1tXhur0Bt00jTOldFvob-Sczg3*lDcgChG26QaHZpzEcISM5/MAVLINK_FOR_DUMMIESPart1_v.1.1.pdf
+  * Arduino with MAVLink https://github.com/tmaxxdd/arduino-with-mavlink
+  * MAVLink message documentation https://mavlink.io/en/messages/common.html
+  * TaskScheduler https://github.com/arkhipenko/TaskScheduler
+  * AdruinoLog https://github.com/thijse/Arduino-Log
+  *
+  * \author Vincent Miceli
+  *
+  * \copyright 2020 Vincent Miceli.
+  *
+  * \license
   * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
   * Permission is hereby  granted, free of charge, to any  person obtaining a copy
   * of this software and associated  documentation files (the "Software"), to deal
@@ -19,18 +33,6 @@
   * LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  *
-  * \see
-  * MAVLink for Dummies: https://api.ning.com/files/i*tFWQTF2R*7Mmw7hksAU-u9IABKNDO9apguOiSOCfvi2znk1tXhur0Bt00jTOldFvob-Sczg3*lDcgChG26QaHZpzEcISM5/MAVLINK_FOR_DUMMIESPart1_v.1.1.pdf
-  * Arduino with MAVLink https://github.com/tmaxxdd/arduino-with-mavlink
-  * MAVLink message documentation https://mavlink.io/en/messages/common.html
-  * TaskScheduler https://github.com/arkhipenko/TaskScheduler
-  * AdruinoLog https://github.com/thijse/Arduino-Log
-  *
-  * \author Vincent Miceli
-  *
-  * \copyright 2020 Vincent Miceli.
-  * \license MIT License
   */
 
 
