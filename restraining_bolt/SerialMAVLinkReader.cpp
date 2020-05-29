@@ -14,9 +14,9 @@
  */
 
 #include "SerialMAVLinkReader.h"
-#include <TaskScheduler.h>
 
-SerialMAVLinkReader::SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver* mavlinkEvebtReceiver )
+
+SerialMAVLinkReader::SerialMAVLinkReader(HardwareSerial* serial,  MAVLinkEventReceiver& mavlinkEvebtReceiver )
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {
 	_serial = serial;
@@ -25,11 +25,14 @@ SerialMAVLinkReader::SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventRe
 
 void SerialMAVLinkReader::start()
 {
+	Log.trace( "Starting MAVLink serial reader" );
 	_serial->begin( 57600, SERIAL_8N1 );
+
 }
 
 bool SerialMAVLinkReader::readByte( uint8_t* buffer )
 {
+
 	if ( _serial->available() > 0 )
 	{
 		return _serial->readBytes( buffer, 1 ) == 1;
@@ -38,39 +41,57 @@ bool SerialMAVLinkReader::readByte( uint8_t* buffer )
 	return false;
 }
 
+bool SerialMAVLinkReader::tick()
+{
+	unsigned long currentMillisMAVLink = millis();
+	
+	receiveMAVLinkMessages();
+
+	// If ready to send heartbeat
+	if ( currentMillisMAVLink - _previousMAVLinkMilliseconds >= _nextIntervalMAVLinkMilliseconds )
+	{
+
+		_previousMAVLinkMilliseconds = currentMillisMAVLink;
+
+		sendMAVLinkHeartbeat();
+
+		_cycleCount += 1;
+
+		// If ready to send data request
+		if ( _cycleCount >= _numberOfCyclesToWait )
+		{
+			// Request streams from Pixhawk
+			Log.trace( "Requesting stream data" );
+			requestMAVLinkStreams();
+			_cycleCount = 0;
+		}
+
+		
+	}
+
+	return true;
+}
+
 void SerialMAVLinkReader::requestMAVLinkStreams()
 {
 	uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
 	uint16_t messageLength = 0;
+	const int maxStreams = 1;
+	uint8_t MAVStreams[maxStreams] = { MAV_DATA_STREAM_ALL };
+	uint16_t MAVRates[maxStreams] = { 0x02 };
+	mavlink_message_t mavlinkMessage;
 
 	/*
 	 * Definitions are in common.h: enum MAV_DATA_STREAM
 	 *
-	 * MAV_DATA_STREAM_ALL=0, // Enable all data streams
-	 * MAV_DATA_STREAM_RAW_SENSORS=1, /* Enable IMU_RAW, GPS_RAW, GPS_STATUS packets.
-	 * MAV_DATA_STREAM_EXTENDED_STATUS=2, /* Enable GPS_STATUS, CONTROL_STATUS, AUX_STATUS
-	 * MAV_DATA_STREAM_RC_CHANNELS=3, /* Enable RC_CHANNELS_SCALED, RC_CHANNELS_RAW, SERVO_OUTPUT_RAW
-	 * MAV_DATA_STREAM_RAW_CONTROLLER=4, /* Enable ATTITUDE_CONTROLLER_OUTPUT, POSITION_CONTROLLER_OUTPUT, NAV_CONTROLLER_OUTPUT.
-	 * MAV_DATA_STREAM_POSITION=6, /* Enable LOCAL_POSITION, GLOBAL_POSITION/GLOBAL_POSITION_INT messages.
-	 * MAV_DATA_STREAM_EXTRA1=10, /* Dependent on the autopilot
-	 * MAV_DATA_STREAM_EXTRA2=11, /* Dependent on the autopilot
-	 * MAV_DATA_STREAM_EXTRA3=12, /* Dependent on the autopilot
-	 * MAV_DATA_STREAM_ENUM_END=13,
 	 *
 	 * Data in PixHawk available in:
 	 *  - Battery, amperage and voltage (SYS_STATUS) in MAV_DATA_STREAM_EXTENDED_STATUS
 	 *  - Gyro info (IMU_SCALED) in MAV_DATA_STREAM_EXTRA1
 	 */
-
-	 // To be setup according to the needed information to be requested from the flight controller
-	const int maxStreams = 1;
-	const uint8_t MAVStreams[maxStreams] = { MAV_DATA_STREAM_ALL };
-	const uint16_t MAVRates[maxStreams] = { 0x02 };
-	mavlink_message_t mavlinkMessage;
-
 	for ( int i = 0; i < maxStreams; i++ )
 	{
-		mavlink_msg_request_data_stream_pack( 2, 200, &mavlinkMessage, 1, 0, MAVStreams[i], MAVRates[i], 1 );
+		mavlink_msg_request_data_stream_pack( _sysid, _compid, &mavlinkMessage, 1, 0, MAVStreams[i], MAVRates[i], 1 );
 		messageLength = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
 		_serial->write( buffer, messageLength );
 	}
@@ -82,11 +103,10 @@ void SerialMAVLinkReader::sendMAVLinkHeartbeat()
 	uint16_t messageLength = 0;
 	mavlink_message_t mavlinkMessage;
 
-	// Store the current time for next loop
-	_previousMAVLinkMilliseconds = _currentMillisMAVLink;
+	Log.trace( "Sending heartbeat message" );
 
 	// Pack the MAVLink heartbeat message
-	mavlink_msg_heartbeat_pack( sysid, compid, &mavlinkMessage, type, autopilot_type, system_mode, custom_mode, system_state );
+	mavlink_msg_heartbeat_pack( _sysid, _compid, &mavlinkMessage, _type, _autopilotType, _systemMode, _customMode, _systemState );
 
 	// Copy the message to the send buffer
 	messageLength = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
@@ -96,6 +116,9 @@ void SerialMAVLinkReader::sendMAVLinkHeartbeat()
 
 
 }
+
+
+
 
 
 

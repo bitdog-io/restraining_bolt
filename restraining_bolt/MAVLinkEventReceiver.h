@@ -10,21 +10,21 @@
 #endif
 
 #include <mavlink_2_ardupilot.h>
-
+#include <ArduinoLog.h>
 
 class MAVLinkEventReceiver {
 
 public:
 	MAVLinkEventReceiver();
 
-	void OnHeatbeat( mavlink_heartbeat_t  mavlink_heartbeat );
-	void OnSysStatus( mavlink_sys_status_t  mavlink_sys_status );
-	void OnParamValue( mavlink_param_value_t  mavlink_param_value );
-	void OnRawIMU( mavlink_raw_imu_t mavlink_raw_imu );
-	void OnGPSInput( mavlink_gps_input_t mavlink_gps_input );
-	void OnNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller );
-	void OnMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached );
-    void OnGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int );
+	virtual void OnHeatbeat( mavlink_heartbeat_t  mavlink_heartbeat );
+	virtual void OnSysStatus( mavlink_sys_status_t  mavlink_sys_status );
+	virtual void OnParamValue( mavlink_param_value_t  mavlink_param_value );
+	virtual void OnRawIMU( mavlink_raw_imu_t mavlink_raw_imu );
+	virtual void OnGPSInput( mavlink_gps_input_t mavlink_gps_input );
+	virtual void OnNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller );
+	virtual void OnMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached );
+    virtual void OnGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int );
 
 
 };

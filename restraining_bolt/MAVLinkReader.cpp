@@ -16,9 +16,9 @@
 #include "MAVLinkReader.h"
 
 
-MAVLinkReader::MAVLinkReader( MAVLinkEventReceiver *mavlinkEventReceiver )
+MAVLinkReader::MAVLinkReader( MAVLinkEventReceiver& mavlinkEventReceiver )
 {
-	_mavlinkEventReceiver = mavlinkEventReceiver;
+	_mavlinkEventReceiver = &mavlinkEventReceiver;
 }
 
 

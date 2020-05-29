@@ -1,85 +1,115 @@
 
 /**
-  * \details 
-  * This program uses MAVLink 2.0 protocol to monitor a flight controller using ArduPilot software.
-  * It has been designed to work on an Teensy 4.1 but it may work on other Arduino
-  * base boards with enough memory. Serial port 1 of the Teensy PCB must be connected to a serial
-  * port of the flight controller. The serial port of the flight controller must be configured for Mavlink 2.0
-  * protocol with a baud rate of 57600. 
-  * GPIO Pin X will produce PWM pulses at 1800hz when status is good. It will produce 900hz or less when a fly away
-  * or other problem is detected.
+  * \details
+  * Licensed under the MIT License <http://opensource.org/licenses/MIT>.
+  * Permission is hereby  granted, free of charge, to any  person obtaining a copy
+  * of this software and associated  documentation files (the "Software"), to deal
+  * in the Software  without restriction, including without  limitation the rights
+  * to  use, copy,  modify, merge,  publish, distribute,  sublicense, and/or  sell
+  * copies  of  the Software,  and  to  permit persons  to  whom  the Software  is
+  * furnished to do so, subject to the following conditions:
+  *
+  * The above copyright notice and this permission notice shall be included in all
+  * copies or substantial portions of the Software.
+  *
+  * THE SOFTWARE  IS PROVIDED "AS  IS", WITHOUT WARRANTY  OF ANY KIND,  EXPRESS OR
+  * IMPLIED,  INCLUDING BUT  NOT  LIMITED TO  THE  WARRANTIES OF  MERCHANTABILITY,
+  * FITNESS FOR  A PARTICULAR PURPOSE AND  NONINFRINGEMENT. IN NO EVENT  SHALL THE
+  * AUTHORS  OR COPYRIGHT  HOLDERS  BE  LIABLE FOR  ANY  CLAIM,  DAMAGES OR  OTHER
+  * LIABILITY, WHETHER IN AN ACTION OF  CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
   *
   * \see
   * MAVLink for Dummies: https://api.ning.com/files/i*tFWQTF2R*7Mmw7hksAU-u9IABKNDO9apguOiSOCfvi2znk1tXhur0Bt00jTOldFvob-Sczg3*lDcgChG26QaHZpzEcISM5/MAVLINK_FOR_DUMMIESPart1_v.1.1.pdf
   * Arduino with MAVLink https://github.com/tmaxxdd/arduino-with-mavlink
   * MAVLink message documentation https://mavlink.io/en/messages/common.html
   * TaskScheduler https://github.com/arkhipenko/TaskScheduler
+  * AdruinoLog https://github.com/thijse/Arduino-Log
+  *
   * \author Vincent Miceli
   *
-  * \copyright  CC-BY-4.0
-  *
+  * \copyright 2020 Vincent Miceli.
+  * \license MIT License
   */
 
 
 #include <SD_t3.h>
 #include <SD.h>
-#include <mavlink_2_ardupilot.h>
+#include <ArduinoLog.h>
+#include <TaskScheduler.h>
+#include "SerialMAVLinkReader.h"
+#include "FileMAVLinkReader.h"
+
+constexpr int chipSelect = BUILTIN_SDCARD; // ID for onboard SD card reader
+constexpr int LOG_LEVEL = LOG_LEVEL_VERBOSE; // Log level
+constexpr Stream* LOG_TARGET = &Serial; // Target USB serial port for log messages
 
 
 
+bool LED_state = false;
 
-constexpr auto LEDPIN = 13;
+/**
+ * @brief Log timestamp generator function
+ * @param _logOutput The stream to write on
+*/
+void printTimestamp( Print* _logOutput )
+{
+	char c[12];
+	sprintf( c, "%10lu ", millis() );
+	_logOutput->print( c );
+}
 
-// Test File
-File testFile;
-const int chipSelect = BUILTIN_SDCARD;
-const char* filename = "test.log";
-bool fileDone = false;
+/**
+ * @brief Adds return line feed to the end of log records
+ * @param _logOutput The stream to wrtie on
+*/
+void printNewline( Print* _logOutput )
+{
+	_logOutput->print( "\r\n" );
+	LOG_TARGET->flush();
+}
 
+// MAVLink event receiver and reader selection
+MAVLinkEventReceiver eventReceiver;
+SerialMAVLinkReader mavlinkReader( &Serial1, eventReceiver );
 
+// Scheduler
+Scheduler scheduler;
+Task blinkTask;
+Task readMAVLinkTask;
 
+/**
+* @Brief  Initialize logging, onboard LED, and start task scheduler
 
-
-
-
-
-
-/*
-* Setup
-* Initialize onboard neopixel, onboard led, and serial ports
 */
 void setup()
 {
-	//Serial.begin( 115200 );
 
-	//// MAVLink interface start
-	//Serial1.begin( 115200 );
+	/// Serial logging setup	
+	Serial.begin( 115200 );
+	Log.begin( LOG_LEVEL, LOG_TARGET, false );
+
+	Log.setPrefix( printTimestamp );
+	Log.setSuffix( printNewline );
+	Log.trace( "" );
+
+	Log.trace( "Restraining bolt starting...." );
 
 
- // 	// Inialize onboard led
-	//pinMode( LEDPIN, OUTPUT );
-	//digitalWrite( LEDPIN, HIGH );  // turn the LED on by making the voltage HIGH
-	//
-	// // Test file
-	//Serial.print( "Initializing SD card..." );
+	// Inialize onboard LED
+	pinMode( LED_BUILTIN, OUTPUT );
 
-	//if ( !SD.begin( chipSelect ) ) {
-	//	Serial.printf( "initialization failed!\r\n" );
-	//	return;
-	//}
-	//Serial.println( "initialization done." );
+	// Blink Task
+	blinkTask.set(TASK_SECOND * 1, TASK_FOREVER, &blink );
+	scheduler.addTask( blinkTask );
+	blinkTask.enable();
 
-	//if ( SD.exists( filename ) ) {
-	//	Serial.printf( "%s exists.\r\n", filename );
-	//}
-	//else {
-	//	Serial.printf( "%s doesn't exist.", filename );
-	//}
+	// Read from MAVLink task
+	readMAVLinkTask.set( TASK_MILLISECOND * 10, TASK_FOREVER, &readMAVLink );
+	scheduler.addTask( readMAVLinkTask );
+	readMAVLinkTask.enable();
 
-	//// open a new file and immediately close it:
-	//Serial.printf( "Opening %s...\r\n", filename );
-	//testFile = SD.open( filename, FILE_WRITE );
-	//testFile.close();
 
 
 }
@@ -87,219 +117,30 @@ void setup()
 
 void loop()
 {
+	scheduler.execute();
+}
+ 
 
-	//// Get run time in milliseconds
-	//currentMillisMAVLink = millis();
+void blink()
+{
+	if ( LED_state )
+	{
+		digitalWrite( LED_BUILTIN, LOW );
+		LED_state = false;
+	}
+	else
+	{
+		digitalWrite( LED_BUILTIN, HIGH );
+		LED_state = true;
+	}
 
-	//// check if enough time has past for next MAVLink heatbeat message
-	//if ( currentMillisMAVLink - previousMAVLinkMilliseconds >= nextIntervalMAVLinkMilliseconds )
-	//{
-	//	mavlink_message_t mavlinkMessage;
+}
 
-	//	// Store the current time for next loop
-	//	previousMAVLinkMilliseconds = currentMillisMAVLink;
-
-	//	// Pack the MAVLink heartbeat message
-	//	mavlink_msg_heartbeat_pack( sysid, compid, &mavlinkMessage, type, autopilot_type, system_mode, custom_mode, system_state );
-
-	//	// Copy the message to the send buffer
-	//	len = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
-
-	//	// Write buffer containing heartbeat message
-	//	Serial1.write( buffer, len );
-
-	//	heartbeatCount++;
-	//	if ( heartbeatCount >= numberOfHeartBeatsToWait )
-	//	{
-	//		// Request streams from Pixhawk
-
-	//		requestMavLinkData();
-	//		heartbeatCount = 0;
-
-	//	}
-
-	//}
+void readMAVLink()
+{
+	mavlinkReader.tick();
 
 
-	//receiveMavLinkData2( readByteFromFile );
 }
 
 
-//
-//void requestMavLinkData()
-//{
-//
-//	/*
-//	 * Definitions are in common.h: enum MAV_DATA_STREAM
-//	 *
-//	 * MAV_DATA_STREAM_ALL=0, // Enable all data streams
-//	 * MAV_DATA_STREAM_RAW_SENSORS=1, /* Enable IMU_RAW, GPS_RAW, GPS_STATUS packets.
-//	 * MAV_DATA_STREAM_EXTENDED_STATUS=2, /* Enable GPS_STATUS, CONTROL_STATUS, AUX_STATUS
-//	 * MAV_DATA_STREAM_RC_CHANNELS=3, /* Enable RC_CHANNELS_SCALED, RC_CHANNELS_RAW, SERVO_OUTPUT_RAW
-//	 * MAV_DATA_STREAM_RAW_CONTROLLER=4, /* Enable ATTITUDE_CONTROLLER_OUTPUT, POSITION_CONTROLLER_OUTPUT, NAV_CONTROLLER_OUTPUT.
-//	 * MAV_DATA_STREAM_POSITION=6, /* Enable LOCAL_POSITION, GLOBAL_POSITION/GLOBAL_POSITION_INT messages.
-//	 * MAV_DATA_STREAM_EXTRA1=10, /* Dependent on the autopilot
-//	 * MAV_DATA_STREAM_EXTRA2=11, /* Dependent on the autopilot
-//	 * MAV_DATA_STREAM_EXTRA3=12, /* Dependent on the autopilot
-//	 * MAV_DATA_STREAM_ENUM_END=13,
-//	 *
-//	 * Data in PixHawk available in:
-//	 *  - Battery, amperage and voltage (SYS_STATUS) in MAV_DATA_STREAM_EXTENDED_STATUS
-//	 *  - Gyro info (IMU_SCALED) in MAV_DATA_STREAM_EXTRA1
-//	 */
-//
-//	 // To be setup according to the needed information to be requested from the flight controller
-//	const int maxStreams = 1;
-//	const uint8_t MAVStreams[maxStreams] = { MAV_DATA_STREAM_ALL };
-//	const uint16_t MAVRates[maxStreams] = { 0x02 };
-//	mavlink_message_t mavlinkMessage;
-//
-//	for ( int i = 0; i < maxStreams; i++ )
-//	{
-//		mavlink_msg_request_data_stream_pack( 2, 200, &mavlinkMessage, 1, 0, MAVStreams[i], MAVRates[i], 1 );
-//		len = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
-//		Serial1.write( buffer, len );
-//	}
-//}
-//
-//
-//bool readByteFromFile( uint8_t* buffer ) {
-//	return testFile.readBytes( buffer, 1 ) == 1;
-//}
-//
-//bool readByteFromSerial( uint8_t* buffer ) {
-//
-//	if ( Serial1.available() > 0 )
-//	{
-//		return Serial1.readBytes( buffer, 1 ) == 1;
-//	}
-//
-//	return false;
-//}
-//
-//void receiveMavLinkData2( bool readByte( uint8_t* ) )
-//{
-//	ROVER_MODE roverMode = ROVER_MODE_INITIALIZING;
-//
-//	if ( !fileDone ) {
-//		testFile = SD.open( filename, FILE_READ );
-//		int loopCount = 0;
-//
-//
-//		while ( !fileDone )
-//		{
-//
-//			uint8_t byteBuffer;
-//
-//			while ( readByte( &byteBuffer ) )
-//			{
-//
-//				digitalWrite( LEDPIN, HIGH ); // turn the LED on (HIGH is the voltage level)
-//				mavlink_message_t mavlinkMessage;
-//				mavlink_status_t status;
-//
-//
-//
-//				// Try to get a new message
-//				if ( mavlink_parse_char( MAVLINK_COMM_1, byteBuffer, &mavlinkMessage, &status ) == MAVLINK_FRAMING_OK )
-//				{
-//					loopCount += 1;
-//					//Serial.printf("%d Got message id: #%d\r\n", loopCount, mavlinkMessage.msgid);
-//
-//
-//					// Handle message
-//					switch ( mavlinkMessage.msgid )
-//					{
-//						case MAVLINK_MSG_ID_HEARTBEAT: // #0: Heartbeat
-//							{
-//
-//								mavlink_heartbeat_t heartbeat;
-//								mavlink_msg_heartbeat_decode( &mavlinkMessage, &heartbeat );
-//
-//								if ( heartbeat.type == (uint8_t)MAV_TYPE_GROUND_ROVER )
-//									if ( heartbeat.custom_mode != (uint32_t)roverMode ) {
-//										Serial.printf( "Rover mode changed from %d to %d\r\n", roverMode, heartbeat.custom_mode );
-//										roverMode = (ROVER_MODE)heartbeat.custom_mode;
-//									}
-//							}
-//							break;
-//
-//						case MAVLINK_MSG_ID_SYS_STATUS: // #1: SYS_STATUS
-//							{
-//								mavlink_sys_status_t sys_status;
-//								mavlink_msg_sys_status_decode( &mavlinkMessage, &sys_status );
-//								//Serial.println("Got system status from MAVLink");
-//							}
-//							break;
-//
-//						case MAVLINK_MSG_ID_PARAM_VALUE: // #22: PARAM_VALUE
-//							{
-//								mavlink_param_value_t param_value;
-//								mavlink_msg_param_value_decode( &mavlinkMessage, &param_value );
-//								// Serial.println("Got parameter data from MAVLink");
-//							}
-//							break;
-//
-//						case MAVLINK_MSG_ID_RAW_IMU: // #27: RAW_IMU
-//							{
-//								mavlink_raw_imu_t imuRaw;
-//								mavlink_msg_raw_imu_decode( &mavlinkMessage, &imuRaw );
-//								//Serial.printf("IMU y gyro is %d\r\n", raw_imu.ygyro);
-//							}
-//							break;
-//
-//							case MAVLINK_MSG_ID_GPS_RAW_INT: // 24
-//							{
-//							    mavlink_gps_raw_int_t gpsRaw;
-//							    mavlink_msg_gps_raw_int_decode(&mavlinkMessage, &gpsRaw);
-//							    Serial.printf("GPS %d fix type is %d\r\n", mavlinkMessage.compid, gpsRaw.fix_type);
-//
-//							}
-//							break;
-//
-//						case MAVLINK_MSG_ID_GPS_INPUT: // 232
-//							{
-//								mavlink_gps_input_t gpsInput;
-//								mavlink_msg_gps_input_decode( &mavlinkMessage, &gpsInput );
-//								Serial.printf( "GPS %d fix type is %d\r\n", gpsInput.gps_id, gpsInput.fix_type );
-//
-//							}
-//							break;
-//
-//
-//						case MAVLINK_MSG_ID_NAV_CONTROLLER_OUTPUT: // #62
-//							{
-//								mavlink_nav_controller_output_t navOutput;
-//								mavlink_msg_nav_controller_output_decode( &mavlinkMessage, &navOutput );
-//								Serial.printf( "Distance to waypont is %d\r\n", navOutput.wp_dist );
-//							}
-//							break;
-//
-//						case MAVLINK_MSG_ID_MISSION_ITEM_REACHED:
-//							{
-//								mavlink_mission_item_reached_t itemReached;
-//								mavlink_msg_mission_item_reached_decode( &mavlinkMessage, &itemReached );
-//								Serial.printf( "Destination reached: %d\r\n", itemReached.seq );
-//
-//							}
-//							break;
-//
-//						default:
-//							break;
-//
-//					}
-//
-//				}
-//
-//
-//			}
-//
-//			fileDone = true;
-//		}
-//
-//		testFile.close();
-//
-//		digitalWrite( LEDPIN, LOW );  // turn the LED off by making the voltage LOW
-//	}
-//
-//}

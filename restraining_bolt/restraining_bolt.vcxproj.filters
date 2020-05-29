@@ -33,6 +33,9 @@
     <ClInclude Include="MAVLinkEventReceiver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FileMAVLinkReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MAVLinkReader.cpp">
@@ -42,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MAVLinkEventReceiver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileMAVLinkReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
