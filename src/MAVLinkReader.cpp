@@ -44,7 +44,7 @@ void MAVLinkReader::receiveMAVLinkMessages()
 						mavlink_heartbeat_t heartbeat;
 						mavlink_msg_heartbeat_decode( &mavlinkMessage, &heartbeat );
 
-						_mavlinkEventReceiver->OnHeatbeat( heartbeat );
+						_mavlinkEventReceiver->onHeatbeat( heartbeat );
 
 						//ROVER_MODE roverMode = ROVER_MODE_INITIALIZING;
 						//if ( heartbeat.type == (uint8_t)MAV_TYPE_GROUND_ROVER )
@@ -60,7 +60,7 @@ void MAVLinkReader::receiveMAVLinkMessages()
 						mavlink_sys_status_t sys_status;
 						mavlink_msg_sys_status_decode( &mavlinkMessage, &sys_status );
 
-						_mavlinkEventReceiver->OnSysStatus( sys_status );
+						_mavlinkEventReceiver->onSysStatus( sys_status );
 					}
 					break;
 
@@ -68,8 +68,8 @@ void MAVLinkReader::receiveMAVLinkMessages()
 					{
 						mavlink_param_value_t param_value;
 						mavlink_msg_param_value_decode( &mavlinkMessage, &param_value );
-						
-						_mavlinkEventReceiver->OnParamValue( param_value );
+
+						_mavlinkEventReceiver->onParamValue( param_value );
 					}
 					break;
 
@@ -77,16 +77,16 @@ void MAVLinkReader::receiveMAVLinkMessages()
 					{
 						mavlink_raw_imu_t imuRaw;
 						mavlink_msg_raw_imu_decode( &mavlinkMessage, &imuRaw );
-						
-						_mavlinkEventReceiver->OnRawIMU( imuRaw );
+
+						_mavlinkEventReceiver->onRawIMU( imuRaw );
 					}
 					break;
 
-					case MAVLINK_MSG_ID_GPS_RAW_INT: // 24
+				case MAVLINK_MSG_ID_GPS_RAW_INT: // 24
 					{
-					    mavlink_gps_raw_int_t gpsRaw;
-					    mavlink_msg_gps_raw_int_decode(&mavlinkMessage, &gpsRaw);
-						_mavlinkEventReceiver->OnGPSRawInt( gpsRaw );
+						mavlink_gps_raw_int_t gpsRaw;
+						mavlink_msg_gps_raw_int_decode( &mavlinkMessage, &gpsRaw );
+						_mavlinkEventReceiver->onGPSRawInt( gpsRaw );
 
 					}
 					break;
@@ -95,8 +95,8 @@ void MAVLinkReader::receiveMAVLinkMessages()
 					{
 						mavlink_gps_input_t gpsInput;
 						mavlink_msg_gps_input_decode( &mavlinkMessage, &gpsInput );
-					    
-						_mavlinkEventReceiver->OnGPSInput( gpsInput );
+
+						_mavlinkEventReceiver->onGPSInput( gpsInput );
 
 					}
 					break;
@@ -106,8 +106,8 @@ void MAVLinkReader::receiveMAVLinkMessages()
 					{
 						mavlink_nav_controller_output_t navOutput;
 						mavlink_msg_nav_controller_output_decode( &mavlinkMessage, &navOutput );
-						
-						_mavlinkEventReceiver->OnNavControllerOutput( navOutput );
+
+						_mavlinkEventReceiver->onNavControllerOutput( navOutput );
 					}
 					break;
 
@@ -115,8 +115,8 @@ void MAVLinkReader::receiveMAVLinkMessages()
 					{
 						mavlink_mission_item_reached_t itemReached;
 						mavlink_msg_mission_item_reached_decode( &mavlinkMessage, &itemReached );
-						
-						_mavlinkEventReceiver->OnMissionItemReached( itemReached );
+
+						_mavlinkEventReceiver->onMissionItemReached( itemReached );
 
 					}
 					break;

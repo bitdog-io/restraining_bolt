@@ -10,7 +10,7 @@
  *
  *
 */
-FileMAVLinkReader::FileMAVLinkReader( char* mavlinkLogFilePath,  MAVLinkEventReceiver& mavlinkEvebtReceiver )
+FileMAVLinkReader::FileMAVLinkReader( char* mavlinkLogFilePath, MAVLinkEventReceiver& mavlinkEvebtReceiver )
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {}
 

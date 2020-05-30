@@ -36,12 +36,15 @@
   */
 
 
+
+#include "EnumHelper.h"
 #include <SD_t3.h>
 #include <SD.h>
 #include <ArduinoLog.h>
 #include <TaskScheduler.h>
 #include "SerialMAVLinkReader.h"
 #include "FileMAVLinkReader.h"
+#include "MissionMonitor.h"
 
 constexpr int chipSelect = BUILTIN_SDCARD; // ID for onboard SD card reader
 constexpr int LOG_LEVEL = LOG_LEVEL_VERBOSE; // Log level
@@ -73,7 +76,7 @@ void printNewline( Print* _logOutput )
 }
 
 // MAVLink event receiver and reader selection
-MAVLinkEventReceiver eventReceiver;
+MissionMonitor eventReceiver;
 SerialMAVLinkReader mavlinkReader( &Serial1, eventReceiver );
 
 // Scheduler
@@ -111,8 +114,6 @@ void setup()
 	readMAVLinkTask.set( TASK_MILLISECOND * 10, TASK_FOREVER, &readMAVLink );
 	scheduler.addTask( readMAVLinkTask );
 	readMAVLinkTask.enable();
-
-
 
 }
 

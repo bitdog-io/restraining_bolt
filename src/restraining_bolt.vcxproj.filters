@@ -40,6 +40,12 @@
     <ClInclude Include="__vm\.restraining-bolt.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MissionMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MAVLinkReader.cpp">
@@ -52,6 +58,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileMAVLinkReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MissionMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EnumHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

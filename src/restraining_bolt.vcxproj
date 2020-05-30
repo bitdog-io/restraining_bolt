@@ -120,7 +120,9 @@
     <ClInclude Include="FileMAVLinkReader.h" />
     <ClInclude Include="MAVLinkEventReceiver.h" />
     <ClInclude Include="MAVLinkReader.h" />
+    <ClInclude Include="MissionMonitor.h" />
     <ClInclude Include="SerialMAVLinkReader.h" />
+    <ClInclude Include="EnumHelper.h" />
     <ClInclude Include="__vm\.restraining-bolt.vsarduino.h" />
     <ClInclude Include="__vm\.restraining_bolt.vsarduino.h" />
   </ItemGroup>
@@ -128,7 +130,9 @@
     <ClCompile Include="FileMAVLinkReader.cpp" />
     <ClCompile Include="MAVLinkEventReceiver.cpp" />
     <ClCompile Include="MAVLinkReader.cpp" />
+    <ClCompile Include="MissionMonitor.cpp" />
     <ClCompile Include="SerialMAVLinkReader.cpp" />
+    <ClCompile Include="EnumHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

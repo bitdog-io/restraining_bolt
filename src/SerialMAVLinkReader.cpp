@@ -16,7 +16,7 @@
 #include "SerialMAVLinkReader.h"
 
 
-SerialMAVLinkReader::SerialMAVLinkReader(HardwareSerial* serial,  MAVLinkEventReceiver& mavlinkEvebtReceiver )
+SerialMAVLinkReader::SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver& mavlinkEvebtReceiver )
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {
 	_serial = serial;
@@ -44,7 +44,7 @@ bool SerialMAVLinkReader::readByte( uint8_t* buffer )
 bool SerialMAVLinkReader::tick()
 {
 	unsigned long currentMillisMAVLink = millis();
-	
+
 	receiveMAVLinkMessages();
 
 	// If ready to send heartbeat
@@ -66,7 +66,7 @@ bool SerialMAVLinkReader::tick()
 			_cycleCount = 0;
 		}
 
-		
+
 	}
 
 	return true;
