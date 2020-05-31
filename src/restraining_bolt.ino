@@ -36,7 +36,7 @@
   */
 
 
-
+#include "AudioPlayer.h"
 #include "EnumHelper.h"
 #include <SD_t3.h>
 #include <SD.h>
