@@ -11,7 +11,7 @@
 #include "WProgram.h"
 #endif
 #include "MAVLinkReader.h"
-#include <ArduinoLog.h>
+
 
 
 class SerialMAVLinkReader : public MAVLinkReader
@@ -25,11 +25,12 @@ protected:
 
 public:
 	SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver& mavlinkEvebtReceiver );
-	virtual void start();
+
 	virtual bool readByte( uint8_t* buffer );
 	virtual bool tick();
 
 private:
+	virtual void start();
 
 	// Heartbeat timer fields
 	const int _numberOfCyclesToWait = 60;              // # of cycles to wait before activating STREAMS from Pixhawk. 60 = one minute.

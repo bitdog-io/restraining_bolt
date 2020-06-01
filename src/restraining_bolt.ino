@@ -34,25 +34,109 @@
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
   */
-
-
-#include "AudioPlayer.h"
-#include "EnumHelper.h"
 #include <SD_t3.h>
 #include <SD.h>
 #include <ArduinoLog.h>
 #include <TaskScheduler.h>
+
+#include "Blinker.h"
+#include "Configuration.h"
+#include "EnumHelper.h"
 #include "SerialMAVLinkReader.h"
 #include "FileMAVLinkReader.h"
 #include "MissionMonitor.h"
 
-constexpr int chipSelect = BUILTIN_SDCARD; // ID for onboard SD card reader
 constexpr int LOG_LEVEL = LOG_LEVEL_VERBOSE; // Log level
 constexpr Stream* LOG_TARGET = &Serial; // Target USB serial port for log messages
+constexpr auto CONFIG_FILE_NAME = "config.ini";
+
+Configuration configuration;
+bool setupStatus = -1;
+
+
+// MAVLink event receiver and reader selection
+MissionMonitor eventReceiver;
+
+
+// SerialMAVLinkReader mavlinkReader( &Serial1, eventReceiver );
+FileMAVLinkReader mavlinkReader( "test.tlog", eventReceiver );
+
+// Scheduler
+Scheduler scheduler;
+Task blinkTask;
+Task readMAVLinkTask;
+
+//Blinker
+Blinker blinker;
+
+
+/**
+* @Brief  Initialize logging, onboard LED, and start task scheduler
+
+*/
+void setup()
+{
+
+	/// Serial logging setup	
+	Serial.begin( 115200 );
+	Log.begin( LOG_LEVEL, LOG_TARGET, false );
+
+	Log.setPrefix( printTimestamp );
+	Log.setSuffix( printNewline );
+	Log.trace( "" );
+
+	Log.trace( "Restraining bolt starting...." );
+
+	if ( !SD.begin( BUILTIN_SDCARD ) )
+	{
+		Log.error( "Could not read SD card" );
+		return;
+	}
+	else
+	{
+		Log.trace( "Found SD card" );
+	}
+
+	// Read configuration file
+	if ( configuration.init(CONFIG_FILE_NAME ))
+	{
+		Log.trace( "Configuration file not found: %s", CONFIG_FILE_NAME );
+	}
 
 
 
-bool LED_state = false;
+	// Blink Task
+	blinkTask.set( TASK_SECOND * 1, TASK_FOREVER, &blink );
+	scheduler.addTask( blinkTask );
+	blinkTask.enable();
+
+	// Read from MAVLink task
+	readMAVLinkTask.set( TASK_MILLISECOND * 10, TASK_FOREVER, &readMAVLink );
+	scheduler.addTask( readMAVLinkTask );
+	readMAVLinkTask.enable();
+
+	setupStatus = 0;
+
+}
+
+
+void loop()
+{
+	if ( setupStatus == 0 )
+		scheduler.execute();
+}
+
+
+void readMAVLink()
+{
+	mavlinkReader.tick();
+}
+
+void blink()
+{
+	blinker.tick();
+}
+
 
 /**
  * @brief Log timestamp generator function
@@ -74,76 +158,3 @@ void printNewline( Print* _logOutput )
 	_logOutput->print( "\r\n" );
 	LOG_TARGET->flush();
 }
-
-// MAVLink event receiver and reader selection
-MissionMonitor eventReceiver;
-SerialMAVLinkReader mavlinkReader( &Serial1, eventReceiver );
-
-// Scheduler
-Scheduler scheduler;
-Task blinkTask;
-Task readMAVLinkTask;
-
-/**
-* @Brief  Initialize logging, onboard LED, and start task scheduler
-
-*/
-void setup()
-{
-
-	/// Serial logging setup	
-	Serial.begin( 115200 );
-	Log.begin( LOG_LEVEL, LOG_TARGET, false );
-
-	Log.setPrefix( printTimestamp );
-	Log.setSuffix( printNewline );
-	Log.trace( "" );
-
-	Log.trace( "Restraining bolt starting...." );
-
-
-	// Inialize onboard LED
-	pinMode( LED_BUILTIN, OUTPUT );
-
-	// Blink Task
-	blinkTask.set(TASK_SECOND * 1, TASK_FOREVER, &blink );
-	scheduler.addTask( blinkTask );
-	blinkTask.enable();
-
-	// Read from MAVLink task
-	readMAVLinkTask.set( TASK_MILLISECOND * 10, TASK_FOREVER, &readMAVLink );
-	scheduler.addTask( readMAVLinkTask );
-	readMAVLinkTask.enable();
-
-}
-
-
-void loop()
-{
-	scheduler.execute();
-}
- 
-
-void blink()
-{
-	if ( LED_state )
-	{
-		digitalWrite( LED_BUILTIN, LOW );
-		LED_state = false;
-	}
-	else
-	{
-		digitalWrite( LED_BUILTIN, HIGH );
-		LED_state = true;
-	}
-
-}
-
-void readMAVLink()
-{
-	mavlinkReader.tick();
-
-
-}
-
-

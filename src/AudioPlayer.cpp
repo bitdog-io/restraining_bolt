@@ -3,6 +3,7 @@
 // 
 
 #include "AudioPlayer.h"
+#include <SD.h>
 #include <Audio.h>
 
 AudioPlaySdWav           _playSdWav1;
@@ -14,6 +15,8 @@ AudioConnection _patchCord3( _mixer1, _dac1 );
 
 AudioPlayer::AudioPlayer()
 {
+	
 
+		_playSdWav1.play( "test.wav" );
 
 }

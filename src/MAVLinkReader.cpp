@@ -22,7 +22,7 @@ MAVLinkReader::MAVLinkReader( MAVLinkEventReceiver& mavlinkEventReceiver )
 }
 
 
-void MAVLinkReader::receiveMAVLinkMessages()
+bool MAVLinkReader::receiveMAVLinkMessages()
 {
 
 	uint8_t byteBuffer = 0;
@@ -126,10 +126,13 @@ void MAVLinkReader::receiveMAVLinkMessages()
 
 			}
 
+			return true;
+
 		}
 
-
 	}
+
+	return false;
 }
 
 

@@ -1,6 +1,8 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src"
   ],
+  "SelectedNode": "\\src\\AudioPlayer.cpp",
   "PreviewInSolutionExplorer": false
 }

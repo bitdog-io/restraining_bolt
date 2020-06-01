@@ -20,7 +20,7 @@ public:
 	MAVLinkReader( MAVLinkEventReceiver& mavlinkEventReceiver );
 
 	virtual void start() = 0;
-	virtual void receiveMAVLinkMessages();
+	virtual bool receiveMAVLinkMessages();
 
 
 protected:
