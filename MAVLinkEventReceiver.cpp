@@ -55,5 +55,10 @@ void MAVLinkEventReceiver::onMissionCurrent( mavlink_mission_current_t mavlink_m
 	Log.trace( "Got mission current" );
 }
 
+void MAVLinkEventReceiver::onRCChannels( mavlink_rc_channels_t mavlink_rc_channels )
+{
+	Log.trace( "Got rc channels" );
+}
+
 
 

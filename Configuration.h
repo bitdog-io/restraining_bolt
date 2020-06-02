@@ -22,6 +22,7 @@ public:
 
 private:
 	bool _testValue = false;
+	int fileSpeedMillis = 10;
 };
 
 #endif

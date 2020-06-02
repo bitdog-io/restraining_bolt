@@ -141,12 +141,12 @@ void setup()
 
 
 	// Blink Task
-	blinkTask.set( TASK_SECOND * 1, TASK_FOREVER, &blink );
+	blinkTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &blink );
 	scheduler.addTask( blinkTask );
 	blinkTask.enable();
 
 	// Read from MAVLink task
-	readMAVLinkTask.set( TASK_MILLISECOND * 10, TASK_FOREVER, &readMAVLink );
+	readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &readMAVLink );
 	scheduler.addTask( readMAVLinkTask );
 	readMAVLinkTask.enable();
 

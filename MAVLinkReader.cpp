@@ -130,6 +130,14 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 
 					}
 					break;
+				case MAVLINK_MSG_ID_RC_CHANNELS:
+					{
+						mavlink_rc_channels_t rcChannels;
+						mavlink_msg_rc_channels_decode( &mavlinkMessage, &rcChannels );
+
+						_mavlinkEventReceiver->onRCChannels( rcChannels );
+					}
+					break;
 				default:
 					//Log.trace("Got unhandled message id: %d", mavlinkMessage.msgid);
 					break;

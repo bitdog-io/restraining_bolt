@@ -28,7 +28,8 @@ protected:
 	virtual void evaluateMission();
 	virtual void failMission();
 	ROVER_MODE _roverMode = ROVER_MODE_INITIALIZING; // Initialize the rover filght mode
-	uint16_t _distanceToWaypoint = 0;
+	uint16_t _lastDistanceToWaypoint = -1;
+	unsigned long _lastProgressMadeTimeMilliseconds = -1;
 	uint16_t _currentWaypointSequenceId = 0;
 
 
