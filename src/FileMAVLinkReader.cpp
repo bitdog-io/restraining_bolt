@@ -11,7 +11,7 @@
  *
  *
 */
-FileMAVLinkReader::FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEventReceiver& mavlinkEvebtReceiver )
+FileMAVLinkReader::FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEventReceiver* mavlinkEvebtReceiver )
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {
 	_mavlinkLogFilePath = mavlinkLogFilePath;

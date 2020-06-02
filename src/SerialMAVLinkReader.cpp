@@ -17,7 +17,7 @@
 #include <ArduinoLog.h>
 
 
-SerialMAVLinkReader::SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver& mavlinkEvebtReceiver )
+SerialMAVLinkReader::SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver* mavlinkEvebtReceiver )
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {
 	_serial = serial;

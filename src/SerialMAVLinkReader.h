@@ -24,7 +24,7 @@ protected:
 	virtual void sendMAVLinkHeartbeat();
 
 public:
-	SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver& mavlinkEvebtReceiver );
+	SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver* mavlinkEvebtReceiver );
 
 	virtual bool readByte( uint8_t* buffer );
 	virtual bool tick();

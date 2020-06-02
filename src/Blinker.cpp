@@ -7,8 +7,7 @@
 
 Blinker::Blinker()
 {
-	// Inialize onboard LED
-	pinMode( LED_BUILTIN, OUTPUT );
+
 }
 
 void Blinker::tick()

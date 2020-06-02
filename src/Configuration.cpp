@@ -3,7 +3,7 @@
 // 
 
 #include "Configuration.h"
-#include <SDConfigFile.h>
+
 
 Configuration::Configuration()
 {

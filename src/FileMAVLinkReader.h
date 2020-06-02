@@ -18,7 +18,7 @@ class FileMAVLinkReader : public MAVLinkReader
 {
 
 public:
-	FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEventReceiver& mavlinkEvebtReceiver );
+	FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEventReceiver* mavlinkEvebtReceiver );
 
 	virtual bool readByte( uint8_t* buffer );
 	virtual bool tick();

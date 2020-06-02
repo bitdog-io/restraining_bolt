@@ -9,6 +9,8 @@
 	#include "WProgram.h"
 #endif
 
+#include <SDConfigFile.h>
+
 class Configuration
 {
 public:
