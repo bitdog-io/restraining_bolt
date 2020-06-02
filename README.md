@@ -1,5 +1,13 @@
-# restraining-bolt
-Arduino software to monitor and restrain ArduPilot drones. This code uses MAVLink protocol from ArduPilot to determine if the drone is progressing towards waypoints in automated flight.
-If its detected that progress isn't being made in the correct direction, a GPIO signal will kill the power and signal a warning.
+![Restraining Bolt](https://github.com/bitdog-io/restraining_bolt/raw/pre-release/images/restraining_bolt.png)
+==================
 
-Not working code yet. 
+*Last Updated: 2 June 2020*
+
+This softare enables Teensy 4.1 microcontrollers to become simple compainion computers 
+for ArduPilot based rovers. It integrates with ArduPilot via MAVLink protocol over 
+serial telemetry to determine if the connected rover is progressing towards waypoints 
+while in automated flight. If the software detects that progress isn't being made in 
+the direction of the target waypoint, a signal will be provide on a GPIO pin.
+
+## Getting started
+Not working code

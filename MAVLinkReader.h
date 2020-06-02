@@ -17,15 +17,15 @@ class MAVLinkReader
 {
 
 public:
-	MAVLinkReader( MAVLinkEventReceiver& mavlinkEventReceiver );
+	MAVLinkReader( MAVLinkEventReceiver* mavlinkEventReceiver );
 
 	virtual void start() = 0;
-	virtual void receiveMAVLinkMessages();
-
+	virtual bool receiveMAVLinkMessages();
+	virtual bool tick() = 0;
 
 protected:
 	virtual bool readByte( uint8_t* buffer ) = 0;
-	virtual bool tick() = 0;
+
 
 
 private:

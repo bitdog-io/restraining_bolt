@@ -8,3 +8,15 @@ restraining_bolt/restraining_bolt.code-workspace
 /src/Debug
 /src/__vm
 /__vm
+/Release
+/.vs/restraining_bolt/v16/ipch/AutoPCH
+/.vs/restraining_bolt/v16/Browse.VC.db-shm
+/.vs/restraining_bolt/v16/Browse.VC.db-wal
+/.vs/restraining_bolt/v16/Browse.VC.opendb
+.vs/restraining_bolt/v16/Browse.VC.db
+.vs/restraining_bolt/v16/.suo
+*.db
+.vs/restraining_bolt/v16/.suo
+*.vcxproj
+*.filters
+*.user
