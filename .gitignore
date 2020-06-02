@@ -17,3 +17,6 @@ restraining_bolt/restraining_bolt.code-workspace
 .vs/restraining_bolt/v16/.suo
 *.db
 .vs/restraining_bolt/v16/.suo
+*.vcxproj
+*.filters
+*.user

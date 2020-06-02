@@ -28,7 +28,10 @@ public:
 	virtual void onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int );
 	virtual void onMissionCurrent( mavlink_mission_current_t mavlink_mission_current );
 	virtual void onRCChannels( mavlink_rc_channels_t mavlink_rc_channels );
+	virtual void onSystemTime( mavlink_system_time_t mavlink_system_time );
 	
+	
+	virtual void tick();
 
 
 };

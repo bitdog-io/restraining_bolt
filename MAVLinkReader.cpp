@@ -54,6 +54,14 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 						//	}
 					}
 					break;
+				case MAVLINK_MSG_ID_SYSTEM_TIME: // #2: SYSTEM_TIME
+					{
+						mavlink_system_time_t system_time;
+						mavlink_msg_system_time_decode( &mavlinkMessage, &system_time );
+
+						_mavlinkEventReceiver->onSystemTime( system_time );
+					}
+					break;
 
 				case MAVLINK_MSG_ID_SYS_STATUS: // #1: SYS_STATUS
 					{

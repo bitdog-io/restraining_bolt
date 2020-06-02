@@ -60,5 +60,15 @@ void MAVLinkEventReceiver::onRCChannels( mavlink_rc_channels_t mavlink_rc_channe
 	Log.trace( "Got rc channels" );
 }
 
+void MAVLinkEventReceiver::onSystemTime( mavlink_system_time_t mavlink_system_time )
+{
+	Log.trace( "Got system time %d", mavlink_system_time.time_boot_ms);
+}
+
+
+
+void MAVLinkEventReceiver::tick()
+{}
+
 
 

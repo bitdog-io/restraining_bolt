@@ -18,11 +18,15 @@ public:
 	bool init( const char* configurationFilePath );
 	
 	bool getTestValue();
-
+	const char* getTestFileName();
+	uint8_t getFileSpeedMilliseconds();
+	uint8_t getLEDPin();
 
 private:
-	bool _testValue = false;
-	int fileSpeedMillis = 10;
+	bool _testValue = true;
+	const char* _testFileName = "test.log";
+	uint8_t _fileSpeedMilliseconds = 10;
+	uint8_t _ledPin = LED_BUILTIN;
 };
 
 #endif

@@ -21,6 +21,10 @@ public:
 	virtual void onMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached );
 	virtual void onNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller );
 	virtual void onMissionCurrent( mavlink_mission_current_t mavlink_mission_current );
+	virtual void onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int );
+	virtual void onSystemTime( mavlink_system_time_t mavlink_system_time );
+	
+
 
 	virtual void tick();
 
@@ -31,6 +35,7 @@ protected:
 	uint16_t _lastDistanceToWaypoint = -1;
 	unsigned long _lastProgressMadeTimeMilliseconds = -1;
 	uint16_t _currentWaypointSequenceId = 0;
+	uint32_t _systemBootTimeMilliseconds = 0;
 
 
 };

@@ -11,11 +11,12 @@
  *
  *
 */
-FileMAVLinkReader::FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEventReceiver* mavlinkEvebtReceiver )
+FileMAVLinkReader::FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEventReceiver* mavlinkEvebtReceiver, uint8_t fileSpeedMilliseconds )
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {
+	_nextIntervalMAVLinkMilliseconds = fileSpeedMilliseconds;
 	_mavlinkLogFilePath = mavlinkLogFilePath;
-  start();
+	start();
 }
 
 void FileMAVLinkReader::start()
@@ -24,10 +25,11 @@ void FileMAVLinkReader::start()
 	{
 		Log.trace( "Cannot find MAVLink file: %s", _mavlinkLogFilePath );
 	}
- else {
-  Log.trace( "Reading MAVLink log file: %s", _mavlinkLogFilePath );
-    _mavlinkFile = SD.open(_mavlinkLogFilePath, FILE_READ);
- }
+	else
+	{
+		Log.trace( "Reading MAVLink log file: %s", _mavlinkLogFilePath );
+		_mavlinkFile = SD.open( _mavlinkLogFilePath, FILE_READ );
+	}
 }
 
 bool FileMAVLinkReader::readByte( uint8_t* buffer )

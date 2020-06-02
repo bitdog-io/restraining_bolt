@@ -1,7 +1,8 @@
 
 /**
   * \details
-
+  * This program is designed for and tested on Teensy 4.1 hardware. It may work on
+  * other variations of Arduino hardware if they have enough ram available.
   *
   * \see
   * MAVLink for Dummies: https://api.ning.com/files/i*tFWQTF2R*7Mmw7hksAU-u9IABKNDO9apguOiSOCfvi2znk1tXhur0Bt00jTOldFvob-Sczg3*lDcgChG26QaHZpzEcISM5/MAVLINK_FOR_DUMMIESPart1_v.1.1.pdf
@@ -34,11 +35,18 @@
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE  OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
   */
-  //#include <SD_t3.h>
+
+  /*
+  Library headers
+  */
 #include <SD.h>
 #include <ArduinoLog.h>
 #include <TaskScheduler.h>
 
+  /*
+  Local headers
+  */
+#include "LogHelper.h"
 #include "Blinker.h"
 #include "Configuration.h"
 #include "EnumHelper.h"
@@ -46,32 +54,15 @@
 #include "FileMAVLinkReader.h"
 #include "MissionMonitor.h"
 
+
+constexpr int FAILED_NO_SD = -1;
+constexpr int FAILED_NO_TEST_FILE = -2;
+
 constexpr int LOG_LEVEL = LOG_LEVEL_VERBOSE; // Log level
 constexpr Stream* LOG_TARGET = &Serial; // Target USB serial port for log messages
 constexpr auto CONFIG_FILE_NAME = "config.ini";
 
 bool setupStatus = -1;
-
-/**
- * @brief Log timestamp generator function
- * @param _logOutput The stream to write on
-*/
-void printTimestamp( Print* _logOutput )
-{
-	char c[12];
-	sprintf( c, "%10lu ", millis() );
-	_logOutput->print( c );
-}
-
-/**
- * @brief Adds return line feed to the end of log records
- * @param _logOutput The stream to wrtie on
-*/
-void printNewline( Print* _logOutput )
-{
-	_logOutput->print( "\r\n" );
-	LOG_TARGET->flush();
-}
 
 
 
@@ -86,14 +77,16 @@ MAVLinkReader* mavlinkReader;
 Scheduler scheduler;
 Task blinkTask;
 Task readMAVLinkTask;
+Task missionMonitorTask;
 
 //Blinker
 Blinker blinker;
 
 
 /**
-* @Brief  Initialize logging, onboard LED, and start task scheduler
-
+* @Brief  
+* Initialize logging, onboard LED, and start task scheduler
+*
 */
 void setup()
 {
@@ -101,72 +94,132 @@ void setup()
 	// Inialize onboard LED
 	pinMode( LED_BUILTIN, OUTPUT );
 
-	/// Serial logging setup	
+	/// Serial debug logging setup	
 	Serial.begin( 115200 );
 	Log.begin( LOG_LEVEL, LOG_TARGET, false );
-
-	Log.setPrefix( printTimestamp );
 	Log.setSuffix( printNewline );
-	Log.trace( "" );
+	Log.trace( "" ); // Create a new line before starting timestamp
+	Log.setPrefix( printTimestamp );
 
 
 	// Check for SD Card
 	if ( !SD.begin( BUILTIN_SDCARD ) )
 	{
 		Log.error( "Could not read SD card" );
+		SetupFailed( FAILED_NO_SD );
+		return;
 	}
 	else
 	{
 		Log.trace( "Found SD card" );
+
+
+		// Read configuration if it exists
+		configuration = new Configuration();
+
+		if ( configuration->init( CONFIG_FILE_NAME ) )
+		{
+			Log.trace( "Configuration file not found: %s", CONFIG_FILE_NAME );
+		}
+		else
+		{
+			Log.trace( "Loaded configuration file: %s", CONFIG_FILE_NAME );
+		}
+
+
+	
+
+		// Setup the mavlink reader and monitor
+		eventReceiver = new MissionMonitor();
+
+		if ( configuration->getTestValue() == true )
+		{
+			if ( SD.exists( configuration->getTestFileName() ) )
+			{
+				Log.trace( "Using MAVLink test file: %s at %d milliseconds per message", configuration->getTestFileName(), configuration->getFileSpeedMilliseconds() );
+				Log.trace( "Restraining bolt starting...." );
+				mavlinkReader = new FileMAVLinkReader( configuration->getTestFileName(), eventReceiver , configuration->getFileSpeedMilliseconds());
+			}
+			else
+			{
+				Log.error( "Cound not find test file: %s", configuration->getTestFileName() );
+				SetupFailed( FAILED_NO_TEST_FILE );
+				return;
+
+			}
+		}
+		else
+		{
+			Log.trace( "Using serial fpr MAVLink" );
+			Log.trace( "Restraining bolt starting...." );
+			mavlinkReader = new SerialMAVLinkReader( &Serial1, eventReceiver );
+
+		}
+
+
+
+		// Blink Task
+		blinkTask.set( TASK_MILLISECOND * 1000, TASK_FOREVER, &blinkTick );
+		scheduler.addTask( blinkTask );
+		blinkTask.enable();
+
+		// Read from MAVLink task
+		readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &mavlinkReaderTick ); 
+		scheduler.addTask( readMAVLinkTask );
+		readMAVLinkTask.enable();
+
+		// Read from MAVLink task
+		missionMonitorTask.set( TASK_SECOND * 1, TASK_FOREVER, &eventReceiverTick );
+		scheduler.addTask( missionMonitorTask );
+		missionMonitorTask.enable();
+
 	}
-
-
-	Log.trace( "Restraining bolt starting...." );
-
-
-	// Read configuration if it exists
-	configuration = new Configuration();
-
-	if ( configuration->init( CONFIG_FILE_NAME ) )
-	{
-		Log.trace( "Configuration file not found: %s", CONFIG_FILE_NAME );
-	} else{
-    Log.trace( "Loaded configuration file: %s", CONFIG_FILE_NAME );
-	}
-
-	// Setup the mavlink reader and monitor
-	eventReceiver = new MissionMonitor();
-	//mavlinkReader = new SerialMAVLinkReader( &Serial1, eventReceiver );
-	 mavlinkReader = new FileMAVLinkReader( "test.log", eventReceiver );
-
-
-	// Blink Task
-	blinkTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &blink );
-	scheduler.addTask( blinkTask );
-	blinkTask.enable();
-
-	// Read from MAVLink task
-	readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &readMAVLink );
-	scheduler.addTask( readMAVLinkTask );
-	readMAVLinkTask.enable();
-
-	setupStatus = 0;
 
 }
 
-
+/**
+ * @brief 
+ * Main program loop provides execution thread to scheduler
+*/
 void loop()
 {
 	scheduler.execute();
+
 }
 
+/**
+ * @brief This method will blink the onboard LED with a pattern for a specific error code
+ * @param errorCode The code for the error that occured
+*/
+void SetupFailed(int errorCode)
+{
+	// Blink Task
+	blinkTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &blinkTick );
+	scheduler.addTask( blinkTask );
+	blinkTask.enable();
 
-void readMAVLink()
+}
+
+/**
+ * @brief MAVLinkReader callback for scheduler 
+*/
+void mavlinkReaderTick()
 {
 	mavlinkReader->tick();
 }
 
-void blink()
+/**
+ * @brief EventReceiver callback for scheduler
+*/
+void eventReceiverTick()
+{
+	eventReceiver->tick();
+}
+
+/**
+ * @brief Callback for normal LED blinking
+*/
+void blinkTick()
 {
 	blinker.tick();
 }
