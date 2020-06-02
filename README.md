@@ -1,5 +1,5 @@
 
-![Restraining Bolt](https://github.com/bitdog-io/restraining_bolt/raw/master/pre-release/restraining_bolt.png)
+![Restraining Bolt](https://github.com/bitdog-io/restraining_bolt/raw/pre-release/images/restraining_bolt.png)
 ==================
 
 *Last Updated: 2 June 2020*
