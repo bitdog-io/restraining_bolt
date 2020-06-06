@@ -43,3 +43,4 @@ compiler warning that might confuse users.
 
 ![Restraining Bolt](https://github.com/bitdog-io/restraining_bolt/raw/pre-release/images/teensy41.png)
 
+  

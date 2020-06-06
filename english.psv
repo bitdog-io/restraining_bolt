@@ -1,0 +1,8 @@
+|ready|Restraining bolt has started
+|mavlinkgood|Receiving telemetry
+|motorsarmed|Motors armed
+|automode|Starting mission, please stand back
+|emergencystop|Emergency stop
+|mavlinkbad|Lost telemetry
+|progressstopped|Progress stopped
+|wrongdirection|Wrong direction

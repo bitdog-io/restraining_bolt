@@ -15,6 +15,7 @@ class EnumHelper
 {
 public:
 	static const char* convert( ROVER_MODE roverMode );
+	static const char* convert( MAV_MODE_FLAG mavModeFag );
 };
 
 #endif

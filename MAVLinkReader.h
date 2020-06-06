@@ -19,17 +19,18 @@ class MAVLinkReader
 public:
 	MAVLinkReader( MAVLinkEventReceiver* mavlinkEventReceiver );
 
-	virtual void start() = 0;
+	virtual void start() {};
 	virtual bool receiveMAVLinkMessages();
-	virtual bool tick() = 0;
+	virtual bool tick();
+	virtual uint32_t getMissionTime();
 
 protected:
-	virtual bool readByte( uint8_t* buffer ) = 0;
-
-
+	virtual bool readByte( uint8_t* buffer );
+	uint32_t _systemBootTimeMilliseconds = 0;
 
 private:
 	MAVLinkEventReceiver* _mavlinkEventReceiver;
+
 };
 
 #endif

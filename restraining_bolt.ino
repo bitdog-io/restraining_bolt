@@ -10,6 +10,8 @@
   * MAVLink message documentation https://mavlink.io/en/messages/common.html
   * TaskScheduler https://github.com/arkhipenko/TaskScheduler
   * AdruinoLog https://github.com/thijse/Arduino-Log
+  * PWMServo https://github.com/PaulStoffregen/PWMServo
+  * TTSAutomate https://ttsautomate.com/
   *
   * \author Vincent Miceli
   *
@@ -39,6 +41,8 @@
   /*
   Library headers
   */
+
+#include <SPI.h>
 #include <SD.h>
 #include <ArduinoLog.h>
 #include <TaskScheduler.h>
@@ -53,7 +57,6 @@
 #include "SerialMAVLinkReader.h"
 #include "FileMAVLinkReader.h"
 #include "MissionMonitor.h"
-
 
 constexpr int FAILED_NO_SD = -1;
 constexpr int FAILED_NO_TEST_FILE = -2;
@@ -113,13 +116,14 @@ void setup()
 	{
 		Log.trace( "Found SD card" );
 
+		AudioMemory( 20 );
 
 		// Read configuration if it exists
 		configuration = new Configuration();
 
-		if ( configuration->init( CONFIG_FILE_NAME ) )
+		if ( ! configuration->init( CONFIG_FILE_NAME ) )
 		{
-			Log.trace( "Configuration file not found: %s", CONFIG_FILE_NAME );
+			Log.trace( "Using defaults, configuration file not found: %s", CONFIG_FILE_NAME );
 		}
 		else
 		{
@@ -127,7 +131,7 @@ void setup()
 		}
 
 
-	
+
 
 		// Setup the mavlink reader and monitor
 		eventReceiver = new MissionMonitor();
@@ -139,6 +143,7 @@ void setup()
 				Log.trace( "Using MAVLink test file: %s at %d milliseconds per message", configuration->getTestFileName(), configuration->getFileSpeedMilliseconds() );
 				Log.trace( "Restraining bolt starting...." );
 				mavlinkReader = new FileMAVLinkReader( configuration->getTestFileName(), eventReceiver , configuration->getFileSpeedMilliseconds());
+
 			}
 			else
 			{
@@ -156,6 +161,13 @@ void setup()
 
 		}
 
+		/**
+		 * @brief 
+		 * Running a mission live or from file require to different mission timing solutions.
+		 * File uses the recorded time in MAVLink packets while live uses the local clock
+		*/
+		eventReceiver->setMissionTimeCallback( []() {return mavlinkReader->getMissionTime(); } );
+
 
 
 		// Blink Task
@@ -168,8 +180,8 @@ void setup()
 		scheduler.addTask( readMAVLinkTask );
 		readMAVLinkTask.enable();
 
-		// Read from MAVLink task
-		missionMonitorTask.set( TASK_SECOND * 1, TASK_FOREVER, &eventReceiverTick );
+		// Run mission task
+		missionMonitorTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &eventReceiverTick );
 		scheduler.addTask( missionMonitorTask );
 		missionMonitorTask.enable();
 

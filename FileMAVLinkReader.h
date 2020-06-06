@@ -23,12 +23,13 @@ public:
 	virtual bool readByte( uint8_t* buffer );
 	virtual bool tick();
 	virtual void start();
+	virtual uint32_t getMissionTime();
 
 protected:
 	const char* _mavlinkLogFilePath;
 	File _mavlinkFile;
 	unsigned long _previousMAVLinkMilliseconds = 0;
-	unsigned long _nextIntervalMAVLinkMilliseconds = 10;
+	unsigned long _nextIntervalMAVLinkMilliseconds = 1;
 
 
 };
