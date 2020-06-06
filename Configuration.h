@@ -25,7 +25,7 @@ public:
 private:
 	bool _testValue = true;
 	const char* _testFileName = "test.log";
-	uint8_t _fileSpeedMilliseconds = 10;
+	uint8_t _fileSpeedMilliseconds = 1;
 	uint8_t _ledPin = LED_BUILTIN;
 };
 

@@ -47,3 +47,40 @@ const char* EnumHelper::convert( ROVER_MODE roverMode )
 			return "Unknown";
 	}
 }
+
+const char* EnumHelper::convert( MAV_MODE_FLAG mavModeFag )
+{
+	switch ( mavModeFag )
+	{
+
+		case MAV_MODE_FLAG_SAFETY_ARMED:
+			return "Safety Armed";
+			break;
+		case MAV_MODE_FLAG_MANUAL_INPUT_ENABLED:
+			return "Manual Input Enabled";
+			break;
+		case MAV_MODE_FLAG_HIL_ENABLED:
+			return "HIL Enabled";
+			break;
+		case MAV_MODE_FLAG_STABILIZE_ENABLED:
+			return "Stabilize Enabled";
+			break;
+		case MAV_MODE_FLAG_GUIDED_ENABLED:
+			return "Guided Enabled";
+			break;
+		case MAV_MODE_FLAG_AUTO_ENABLED:
+			return "Auto Enabled";
+			break;
+		case MAV_MODE_FLAG_TEST_ENABLED:
+			return "Test Enabled";
+			break;
+		case MAV_MODE_FLAG_CUSTOM_MODE_ENABLED:
+			return "Custom Mode Enabled";
+			break;
+
+		default:
+			return "Unknown";
+	}
+}
+
+

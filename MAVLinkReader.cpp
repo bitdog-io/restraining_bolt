@@ -16,6 +16,7 @@
 #include "MAVLinkReader.h"
 
 
+
 MAVLinkReader::MAVLinkReader( MAVLinkEventReceiver* mavlinkEventReceiver )
 {
 	_mavlinkEventReceiver = mavlinkEventReceiver;
@@ -46,19 +47,13 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 
 						_mavlinkEventReceiver->onHeatbeat( heartbeat );
 
-						//ROVER_MODE roverMode = ROVER_MODE_INITIALIZING;
-						//if ( heartbeat.type == (uint8_t)MAV_TYPE_GROUND_ROVER )
-						//	if ( heartbeat.custom_mode != (uint32_t)roverMode ) {
-						//		Serial.printf( "Rover mode changed from %d to %d\r\n", roverMode, heartbeat.custom_mode );
-						//		roverMode = (ROVER_MODE)heartbeat.custom_mode;
-						//	}
 					}
 					break;
 				case MAVLINK_MSG_ID_SYSTEM_TIME: // #2: SYSTEM_TIME
 					{
 						mavlink_system_time_t system_time;
 						mavlink_msg_system_time_decode( &mavlinkMessage, &system_time );
-
+						_systemBootTimeMilliseconds = system_time.time_boot_ms;
 						_mavlinkEventReceiver->onSystemTime( system_time );
 					}
 					break;
@@ -158,5 +153,23 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 
 	}
 
+	return false;
+}
+
+bool MAVLinkReader::tick()
+{
+	return false;
+}
+
+uint32_t MAVLinkReader::getMissionTime()
+{
+
+	return millis();
+
+}
+
+
+bool MAVLinkReader::readByte( uint8_t* buffer )
+{
 	return false;
 }

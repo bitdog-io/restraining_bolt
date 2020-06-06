@@ -52,3 +52,11 @@ bool FileMAVLinkReader::tick()
 
 	return true;
 }
+
+
+uint32_t FileMAVLinkReader::getMissionTime()
+{
+
+	 return _systemBootTimeMilliseconds;
+
+}
