@@ -10,12 +10,15 @@
 
 
 MissionMonitor::MissionMonitor()
-{}
+{
+
+}
 
 void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 {
 	// Check for state change
 	if ( mavlink_heartbeat.type == (uint8_t)MAV_TYPE_GROUND_ROVER )
+	{
 		if ( mavlink_heartbeat.custom_mode != (uint32_t)_roverMode )
 		{
 			ROVER_MODE roverMode = (ROVER_MODE)mavlink_heartbeat.custom_mode;
@@ -31,16 +34,32 @@ void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 			{
 				// reset time monitor
 				_lastProgressMadeTimeMilliseconds = 0;
+				_isFailed = false;
+				_audioPlayer.play( AUTO_MODE_SOUND );
+			}
+			else 
+			{
+				_lastProgressMadeTimeMilliseconds = 0;
+				_isFailed = false;
+				_audioPlayer.play( NOT_AUTO_SOUND );
 			}
 
 			// Switching modes turns on power
 			_servoRelay.powerRelayOn();
 			_servoRelay.alarmRelayOff();
 		}
+	}
+
+	if ( _firstHeartbeat == false )
+	{
+		_firstHeartbeat = true;
+		_audioPlayer.play( MAVLINK_GOOD_SOUND );
+	}
 }
 
 void MissionMonitor::onMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached )
 {
+	_lastProgressMadeTimeMilliseconds = getMissionTime();
 	Log.trace( "Destination reached: %d", mavlink_mission_item_reached.seq );
 }
 
@@ -62,11 +81,12 @@ void MissionMonitor::onNavControllerOutput( mavlink_nav_controller_output_t mavl
 	}
 	else if ( _lastDistanceToWaypoint < mavlink_nav_controller.wp_dist )
 	{
+		// No progress toward waypoint
 		Log.trace( "Distance to waypoint is %d and growing for %d milliseconds", mavlink_nav_controller.wp_dist, missionTime - _lastProgressMadeTimeMilliseconds );
 	}
 	else
 	{
-		Log.trace( "Distance to waypoint is %d and closing Mission Tome: %d", mavlink_nav_controller.wp_dist, getMissionTime() );
+		Log.trace( "Distance to waypoint is %d and closing Mission Time: %d", mavlink_nav_controller.wp_dist, getMissionTime() );
 		progressMade = true;
 	}
 
@@ -99,6 +119,13 @@ void MissionMonitor::onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int )
 void MissionMonitor::tick()
 {
 	evaluateMission();
+
+	if ( ! _firstTick )
+	{
+		_firstTick = true;
+		_audioPlayer.play( READY_SOUND );
+	}
+
 	_audioPlayer.tick();
 }
 
@@ -113,25 +140,29 @@ void MissionMonitor::evaluateMission()
 	uint32_t  missionTime = getMissionTime();
 	uint32_t timeDifference =  missionTime - _lastProgressMadeTimeMilliseconds;
 
-	if ( _roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference > (5 * 1000) )
+	if ( !_isFailed )
 	{
-		Log.trace( "*************** SHUTDOWN *********************************************" );
-		Log.trace( "Last progress time: %d  mission time: %d difference: %d", _lastProgressMadeTimeMilliseconds, missionTime, timeDifference );
-		Log.trace( "**********************************************************************" );
+		if ( _roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference > (8 * 1000) )
+		{
+			Log.trace( "*************** SHUTDOWN *********************************************" );
+			Log.trace( "Last progress time: %d  mission time: %d difference: %d", _lastProgressMadeTimeMilliseconds, missionTime, timeDifference );
+			Log.trace( "**********************************************************************" );
 
-		failMission();
+			failMission();
 
-		_audioPlayer.play( EMERGENCY_STOP_SOUND );
+			_audioPlayer.play( EMERGENCY_STOP_SOUND );
 
-	}
-	else if ( _roverMode == ROVER_MODE_AUTO )
-	{
-		//Log.trace( "All is well with mission" );
+		}
+		else if ( _roverMode == ROVER_MODE_AUTO )
+		{
+			//Log.trace( "All is well with mission" );
+		}
 	}
 }
 
 void MissionMonitor::failMission()
 {
+	_isFailed = true;
 	_servoRelay.powerRelayOff();
 	_servoRelay.alarmRelayOn();
 }

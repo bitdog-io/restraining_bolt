@@ -32,13 +32,13 @@ bool Configuration::init( const char* configurationFilePath )
         switch ( str2int(name) )
         {
             case str2int("test"):
-                _testValue = configFile.getBooleanValue();
+                _testing = configFile.getBooleanValue();
                 break;
             case str2int("testFileName"):
                 _testFileName = configFile.getValue();
                 break;
             case str2int( "fileSpeedMilliseonds" ):
-                _testValue = configFile.getBooleanValue();
+                _testing = configFile.getBooleanValue();
                 break;
             case str2int( "LEDPin" ):
                 _testFileName = configFile.getValue();
@@ -50,9 +50,9 @@ bool Configuration::init( const char* configurationFilePath )
     return true;
 }
 
-bool Configuration::getTestValue()
+bool Configuration::getTesting()
 {
-    return _testValue;;
+    return _testing;;
 }
 
 const char* Configuration::getTestFileName()
