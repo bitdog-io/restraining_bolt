@@ -21,6 +21,10 @@ AudioPlayer::AudioPlayer()
 		_charPtrArray[i] = new char[MAX_FILEPATH_SIZE];
 	}
 
+	//AudioInterrupts();
+	//AudioNoInterrupts();
+
+
 }
 
 AudioPlayer::~AudioPlayer()
@@ -42,7 +46,7 @@ void AudioPlayer::play( const char* filename )
 		strcpy( fullpath, SOUND_DIRECTORY );
 		strcat( fullpath, filename );
 
-		Log.trace( "scheduling Sound file for playback: %s", fullpath );
+		Log.trace( "scheduling sound file for playback: %s", fullpath );
 		_playQueue.enqueue( fullpath );
 
 	}
@@ -53,12 +57,25 @@ void AudioPlayer::tick()
 {
 	if ( (!_playSdWav1.isPlaying()) && _playQueue.size() > 0 )
 	{
-		 char* fullpath = _playQueue.dequeue();
-		 Log.trace( "scheduling Sound file for playback: %s", fullpath );
+		 char* filepath = _playQueue.dequeue();
 
-		 if ( fullpath != nullptr )
+		 if ( filepath != nullptr )
 		 {
-			_playSdWav1.play( fullpath );
+			//
+			 if ( !_playSdWav1.play( filepath ) )
+			 {
+				 Log.trace( "Could not play sound file: %s", filepath );
+			 }
+			 else
+			 {
+				 delay( 1000 );
+
+				 while ( _playSdWav1.isPlaying() )
+				 {
+					 // stop processing to allow the sound to play. Unfortunately haven't found a way to allow the audio interrupts to work without it.
+					 delay( 1000 );
+				 }
+			 }
 		 }
 
 

@@ -38,7 +38,9 @@ protected:
 	int16_t _lastDistanceToWaypoint = -1;
 	unsigned long _lastProgressMadeTimeMilliseconds = 0;
 	uint16_t _currentWaypointSequenceId = 0;
-
+	bool _firstHeartbeat = false;
+	bool _firstTick = false;
+	bool _isFailed = false;
 
 
 

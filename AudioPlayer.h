@@ -12,15 +12,15 @@
 #include "Queue.h"
 
 constexpr auto READY_SOUND = "ready.wav";
-constexpr auto MAVLINK_GOOD_SOUND = "mavlinkgood.wav";
-constexpr auto MOTORS_ARMED_SOUND = "motorsarmed.wav";
-constexpr auto AUTO_MODE_SOUND = "automode.wav";
-constexpr auto EMERGENCY_STOP_SOUND = "emergencystop.wav";
-constexpr auto MAVLINK_BAD_SOUND = "mavlinkbad.wav";
-constexpr auto PROGRESS_STOPPED_SOUND = "progressstopped.wav";
-constexpr auto WRONG_DIRECTION_SOUND = "wrongdirection.wav";
-constexpr auto NOT_AUTO_SOUND = "automodestop.wav";
-constexpr auto MISSION_END_SOUND = "missionended.wav";
+constexpr auto MAVLINK_GOOD_SOUND = "mlgood.wav";
+constexpr auto MOTORS_ARMED_SOUND = "armed.wav";
+constexpr auto AUTO_MODE_SOUND = "auto.wav";
+constexpr auto EMERGENCY_STOP_SOUND = "estop.wav";
+constexpr auto MAVLINK_BAD_SOUND = "mlbad.wav";
+constexpr auto PROGRESS_STOPPED_SOUND = "stopped.wav";
+constexpr auto WRONG_DIRECTION_SOUND = "wrongdir.wav";
+constexpr auto NOT_AUTO_SOUND = "autostop.wav";
+constexpr auto MISSION_END_SOUND = "ended.wav";
 
 constexpr const char* SOUND_DIRECTORY = "sounds/";
 constexpr int FILE_QUEUE_SIZE = 20;

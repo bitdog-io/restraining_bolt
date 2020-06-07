@@ -41,9 +41,12 @@
   /*
   Library headers
   */
-
+#include <Audio.h>
+#include <Wire.h>
 #include <SPI.h>
-#include <SD.h>
+#include <SdFat.h>
+#include <SerialFlash.h>
+
 #include <ArduinoLog.h>
 #include <TaskScheduler.h>
 
@@ -94,11 +97,14 @@ Blinker blinker;
 void setup()
 {
 
+	AudioMemory( 40 );
+
 	// Inialize onboard LED
 	pinMode( LED_BUILTIN, OUTPUT );
 
 	/// Serial debug logging setup	
 	Serial.begin( 115200 );
+
 	Log.begin( LOG_LEVEL, LOG_TARGET, false );
 	Log.setSuffix( printNewline );
 	Log.trace( "" ); // Create a new line before starting timestamp
@@ -116,8 +122,6 @@ void setup()
 	{
 		Log.trace( "Found SD card" );
 
-		AudioMemory( 20 );
-
 		// Read configuration if it exists
 		configuration = new Configuration();
 
@@ -131,12 +135,10 @@ void setup()
 		}
 
 
-
-
 		// Setup the mavlink reader and monitor
 		eventReceiver = new MissionMonitor();
 
-		if ( configuration->getTestValue() == true )
+		if ( configuration->getTesting() == false )
 		{
 			if ( SD.exists( configuration->getTestFileName() ) )
 			{
@@ -186,6 +188,8 @@ void setup()
 		missionMonitorTask.enable();
 
 	}
+
+	
 
 }
 
