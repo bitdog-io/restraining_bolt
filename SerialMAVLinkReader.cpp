@@ -21,15 +21,11 @@ SerialMAVLinkReader::SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventRe
 	: MAVLinkReader( mavlinkEvebtReceiver )
 {
 	_serial = serial;
-	start();
-}
-
-void SerialMAVLinkReader::start()
-{
+	
 	Log.trace( "Starting MAVLink serial reader" );
 	_serial->begin( 57600, SERIAL_8N1 );
-
 }
+
 
 bool SerialMAVLinkReader::readByte( uint8_t* buffer )
 {
@@ -42,7 +38,7 @@ bool SerialMAVLinkReader::readByte( uint8_t* buffer )
 	return false;
 }
 
-bool SerialMAVLinkReader::tick()
+void SerialMAVLinkReader::tick()
 {
 	unsigned long currentMillisMAVLink = millis();
 
@@ -70,7 +66,6 @@ bool SerialMAVLinkReader::tick()
 
 	}
 
-	return true;
 }
 
 void SerialMAVLinkReader::requestMAVLinkStreams()

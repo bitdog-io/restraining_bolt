@@ -20,3 +20,5 @@ restraining_bolt/restraining_bolt.code-workspace
 *.vcxproj
 *.filters
 *.user
+/sdcard/sounds/mp3
+/sdcard/sounds/wav

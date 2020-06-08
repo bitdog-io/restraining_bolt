@@ -9,11 +9,17 @@
 	#include "WProgram.h"
 #endif
 
+/**
+ * @brief Blinker toggles the onboard LED. 
+*/
 class Blinker
 {
 public:
 	Blinker();
 
+	/**
+	 * @brief Used by the scheduling system to give blinker execution time.
+	*/
 	void tick();
 
 private:

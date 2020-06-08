@@ -1,7 +1,7 @@
 ![Restraining Bolt](https://github.com/bitdog-io/restraining_bolt/raw/pre-release/images/restraining_bolt.png)
 ==================
 
-*Last Updated: 2 June 2020*
+*Last Updated: 8 June 2020*
 
 I have a very large rover that lost control one day while executing an automated mission. 
 It took me 21 seconds to respond and by that time the rover got very close to causing a disaster. 
@@ -28,19 +28,32 @@ The things you will need:
 - Teensy 4.1 board & Micro SD Card
 - Learn how to use [Teensy toolchain](https://www.pjrc.com/teensy/tutorial.html)
 - Get a PWM controlled [relay like](https://www.amazon.com/dp/B01M3WQZLF/ref=cm_sw_em_r_mt_dp_U_Ni51EbRXS7CVA)
-- You might also want to get a small audio amp like [this](https://www.sparkfun.com/products/11044)
+- If you want audio prompts you might also want to get a small audio amp like [this](https://www.sparkfun.com/products/11044)
+
+Copy the contents of /sdcard found in this repo to the SD card you are using for the Teensy. Open the config.ini on the SD card
+and make any necessary changes.
 
 ## Compilation
 I have include the external libraries as a zip under /libraries. You will need to extract the zip file and 
-and move the extracted folders to (if you use Windows)  C:\Users\{your-username}\Documents\Arduino\libraries.
+and move the extracted folders to (if you use Windows)  C:\Users\yourusername\Documents\Arduino\libraries.
 
 Note: Most of the libraries I use like Arduino-Log, sdconfigfile, and TaskScheduler can be found as public
 libraries in the Arduino IDE. I also use mavlink2 which I cobbled together from
 [GitHub mavlink/c_library_v2](https://github.com/mavlink/c_library_v2) repo. I modified it a bit to eliminate any
 compiler warning that might confuse users.
 
-## Wiring 
+## Testing
+To test the logic in this program I made it easy to use Mission Planner telemetry logs instead of real MAVLink telemetry.
+Just load a copy of a recorded mission onto an SD card and change the config.ini to point to it.
 
-![Restraining Bolt](https://github.com/bitdog-io/restraining_bolt/raw/pre-release/images/teensy41.png)
+## Changing sound prompts
+I used [TTSAutomate](https://ttsautomate.com/) to generate the voice prompts used in this program. Install TTSAutomate 
+then use it to open english.psv which can be found in this repo. Any newly generated prompts need to be copied to the 
+SD card under /sounds.
+
+## Future
+I plan on creating a gas engine monitor and control system and include it as an optional feature in ths software
+
+
 
   

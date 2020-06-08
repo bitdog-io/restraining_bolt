@@ -1,8 +1,10 @@
 |ready|Restraining bolt has started
-|mavlinkgood|Receiving telemetry
-|motorsarmed|Motors armed
-|automode|Starting mission, please stand back
-|emergencystop|Emergency stop
-|mavlinkbad|Lost telemetry
-|progressstopped|Progress stopped
-|wrongdirection|Wrong direction
+|mlgood|Communicating with flight controller 
+|armed|Motors armed
+|auto|Starting mission, please stand back
+|estop|Emergency stop
+|mlbad|Lost communication with flight controller 
+|stopped|Progress stopped
+|wrongdir|Wrong direction
+|autostop|Manual control
+|ended|Mission ended
