@@ -7,7 +7,7 @@ I have a very large rover that lost control one day while executing an automated
 It took me 21 seconds to respond and by that time the rover got very close to causing a disaster. 
 
 Although geo-fencing might be a solution from some run away conditions, 
-unfortuantely, that is not always a valid soltuion. Having a rover off its path, 
+unfortuantely, that is not always a valid solution. Having a rover off its path, 
 but still within a valid geo-fenced area, can still be a dangerous situation. I discovered
 I couldn't depend on just the flight controller, geo-fenced areas, or my reaction time for safety. That is why I made this project. Restraining Bolt is designed to make sure your robot doesn't run away.
 
@@ -18,9 +18,9 @@ while in automated flight. If the software detects that progress isn't being mad
 the direction of the target waypoint, a PWM signal from the Teensy GPIO will enable propulsion system shutdown.
 
 I picked Teensy 4.1 hardware for this project for a variety of reasons. Firstly, its one of the few Arduino
-based boards to have enough ram to use the MALLink C library without modification. It also provides an
+based boards that have enough ram to use the MALLink C library without modification. It also provides an
 onboard SD card slot. And finalily, it has pretty decent hardware to make sound. I plan on using this last
-feature to enable Restraining Bolt to make audible warnings about state changes.
+feature to enable Restraining Bolt to verablly announce important state changes and warnings.
 
 ## Getting started
 The things you will need:
@@ -30,7 +30,7 @@ The things you will need:
 - Get a PWM controlled [relay like](https://www.amazon.com/dp/B01M3WQZLF/ref=cm_sw_em_r_mt_dp_U_Ni51EbRXS7CVA)
 - If you want audio prompts you might also want to get a small audio amp like [this](https://www.sparkfun.com/products/11044)
 
-Copy the contents of /sdcard found in this repo to the SD card you are using for the Teensy. Open the config.ini on the SD card
+Copy the contents of /sdcard found in this repo to the SD card you are using for your Teensy. Open the config.ini on the SD card
 and make any necessary changes.
 
 ## Compilation
