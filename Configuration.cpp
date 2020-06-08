@@ -38,10 +38,10 @@ bool Configuration::init( const char* configurationFilePath )
                 _testFileName = configFile.getValue();
                 break;
             case str2int( "fileSpeedMilliseonds" ):
-                _testing = configFile.getBooleanValue();
+                _fileSpeedMilliseconds = configFile.getIntValue();
                 break;
-            case str2int( "LEDPin" ):
-                _testFileName = configFile.getValue();
+            case str2int( "secondsBeforeEmergencyStop" ):
+                _secondsBeforeEmergencyStop = configFile.getIntValue();
                 break;
         }
     }
@@ -66,7 +66,8 @@ uint8_t Configuration::getFileSpeedMilliseconds()
 
 }
 
-uint8_t Configuration::getLEDPin()
+uint32_t Configuration::getSecondsBeforeEmergencyStop()
 {
-    return _ledPin;
+    return _secondsBeforeEmergencyStop;
 }
+

@@ -24,16 +24,30 @@ protected:
 	virtual void sendMAVLinkHeartbeat();
 
 public:
+	/**
+	 * @brief Constructor
+	 * @param serial The serail interface to receive MAVLink message from.
+	 * @param mavlinkEvebtReceiver The event receiver to send captured messages to.
+	 * 
+	*/
 	SerialMAVLinkReader( HardwareSerial* serial, MAVLinkEventReceiver* mavlinkEvebtReceiver );
 
+	/**
+	 * @brief Read a single btye from MAVLink serial line.
+	 * @param buffer The buffer to copy the byte to.
+	 * @return True is a byte was read.
+	*/
 	virtual bool readByte( uint8_t* buffer );
-	virtual bool tick();
+
+	/**
+	 * @brief Used by the scheduling system to pass execution to the serial MAVLink reader.
+	*/
+	virtual void tick();
 
 private:
-	virtual void start();
 
 	// Heartbeat timer fields
-	const int _numberOfCyclesToWait = 60;              // # of cycles to wait before activating STREAMS from Pixhawk. 60 = one minute.
+	const int _numberOfCyclesToWait = 60;              ///< of cycles to wait before activating STREAMS from Pixhawk. 60 = one minute.
 	unsigned long  _previousMAVLinkMilliseconds = 0;        ///< will store last time MAVLink was transmitted and listened
 	const unsigned long _nextIntervalMAVLinkMilliseconds = 1000;  ///< next interval to count
 	int _cycleCount = 60;          ///< Number of cycles before a data request

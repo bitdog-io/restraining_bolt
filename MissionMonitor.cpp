@@ -9,9 +9,9 @@
 #include "AudioPlayer.h"
 
 
-MissionMonitor::MissionMonitor()
+MissionMonitor::MissionMonitor( uint32_t secondsBeforeEmergencyStop )
 {
-
+	_secondsBeforeEmergencyStop = secondsBeforeEmergencyStop;
 }
 
 void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
@@ -29,24 +29,8 @@ void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 			_mavModeFlag = mavModeFlag;
 			_roverMode = roverMode;
 
-			// If we have gone to auto
-			if ( _roverMode == ROVER_MODE_AUTO )
-			{
-				// reset time monitor
-				_lastProgressMadeTimeMilliseconds = 0;
-				_isFailed = false;
-				_audioPlayer.play( AUTO_MODE_SOUND );
-			}
-			else 
-			{
-				_lastProgressMadeTimeMilliseconds = 0;
-				_isFailed = false;
-				_audioPlayer.play( NOT_AUTO_SOUND );
-			}
-
-			// Switching modes turns on power
-			_servoRelay.powerRelayOn();
-			_servoRelay.alarmRelayOff();
+			// The drive mode changed, restart everything
+			start();
 		}
 	}
 
@@ -59,8 +43,8 @@ void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 
 void MissionMonitor::onMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached )
 {
-	_lastProgressMadeTimeMilliseconds = getMissionTime();
 	Log.trace( "Destination reached: %d", mavlink_mission_item_reached.seq );
+	_lastProgressMadeTimeMilliseconds = getMissionTime();
 }
 
 void MissionMonitor::onNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller )
@@ -77,12 +61,18 @@ void MissionMonitor::onNavControllerOutput( mavlink_nav_controller_output_t mavl
 	else if ( _lastDistanceToWaypoint == mavlink_nav_controller.wp_dist )
 	{
 		//Log.trace( "Distance to waypoint is %d Mission Time: %d", mavlink_nav_controller.wp_dist,getMissionTime() );
-		progressMade = true;
+		
+		// if the last report was going in the wrong direction, don't capture time as progress being made
+		if(!_wrongDirection )
+			progressMade = true;
 	}
 	else if ( _lastDistanceToWaypoint < mavlink_nav_controller.wp_dist )
 	{
-		// No progress toward waypoint
+		// We are making negative progress toward waypoint
 		Log.trace( "Distance to waypoint is %d and growing for %d milliseconds", mavlink_nav_controller.wp_dist, missionTime - _lastProgressMadeTimeMilliseconds );
+		_wrongDirection = true;
+		_wrongDirectionCount += 1;
+
 	}
 	else
 	{
@@ -93,7 +83,11 @@ void MissionMonitor::onNavControllerOutput( mavlink_nav_controller_output_t mavl
 	_lastDistanceToWaypoint = mavlink_nav_controller.wp_dist;
 
 	if ( progressMade )
+	{
 		_lastProgressMadeTimeMilliseconds = missionTime;
+		_wrongDirection = false;
+		_wrongDirectionCount = 0;
+	}
 }
 
 void MissionMonitor::onMissionCurrent( mavlink_mission_current_t mavlink_mission_current )
@@ -142,7 +136,7 @@ void MissionMonitor::evaluateMission()
 
 	if ( !_isFailed )
 	{
-		if ( _roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference > (8 * 1000) )
+		if ( _roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference > (_secondsBeforeEmergencyStop * 1000) )
 		{
 			Log.trace( "*************** SHUTDOWN *********************************************" );
 			Log.trace( "Last progress time: %d  mission time: %d difference: %d", _lastProgressMadeTimeMilliseconds, missionTime, timeDifference );
@@ -150,12 +144,15 @@ void MissionMonitor::evaluateMission()
 
 			failMission();
 
-			_audioPlayer.play( EMERGENCY_STOP_SOUND );
-
 		}
 		else if ( _roverMode == ROVER_MODE_AUTO )
 		{
-			//Log.trace( "All is well with mission" );
+			if ( _wrongDirectionCount == 2 )
+			{
+				// bump count to avoid play this sound again, its the only thing this count is being used for
+				_wrongDirectionCount += 1;
+				_audioPlayer.play( WRONG_DIRECTION_SOUND );
+			}
 		}
 	}
 }
@@ -165,7 +162,31 @@ void MissionMonitor::failMission()
 	_isFailed = true;
 	_servoRelay.powerRelayOff();
 	_servoRelay.alarmRelayOn();
+	_audioPlayer.play( EMERGENCY_STOP_SOUND );
+
 }
+
+void MissionMonitor::start()
+{
+	_lastProgressMadeTimeMilliseconds = 0;
+	_isFailed = false;
+	_wrongDirection = false;
+	_wrongDirectionCount = 0;
+
+	_servoRelay.powerRelayOn();
+	_servoRelay.alarmRelayOff();
+
+	// If we have gone to auto
+	if ( _roverMode == ROVER_MODE_AUTO )
+	{
+		_audioPlayer.play( AUTO_MODE_SOUND );
+	}
+	else // we have changed to a mode other than auto
+	{
+		_audioPlayer.play( NOT_AUTO_SOUND );
+	}
+}
+
 
 
 

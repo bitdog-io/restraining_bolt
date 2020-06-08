@@ -16,19 +16,19 @@ constexpr auto QUEUE_SIZE = 20;
 // Class for Queue
 class Queue
 {
-	char** arr;		// array to store queue elements
-	int capacity;	// maximum capacity of the queue
-	int front;		// front points to front element in the queue (if any)
-	int rear;		// rear points to last element in the queue
-	int count;		// current size of the queue
+	const char** _arr;		// array to store queue elements
+	int _capacity;	// maximum capacity of the queue
+	int _front;		// front points to front element in the queue (if any)
+	int _rear;		// rear points to last element in the queue
+	int _count;		// current size of the queue
 
 public:
 	Queue( int size = QUEUE_SIZE );		// constructor
 	~Queue();					// destructor
 
-	char* dequeue();
-	void enqueue( char* item );
-	char* peek();
+	const char* dequeue();
+	void enqueue( const char* item );
+	const char* peek();
 	int size();
 	bool isEmpty();
 	bool isFull();

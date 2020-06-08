@@ -14,7 +14,18 @@
 class EnumHelper
 {
 public:
+	/**
+	 * @brief Convert the enum to string.
+	 * @param roverMode The value to convert.
+	 * @return String value.
+	*/
 	static const char* convert( ROVER_MODE roverMode );
+
+	/**
+	 * @brief Convert the enum to string.
+	 * @param mavModeFag The value to convert.
+	 * @return String value.
+	*/
 	static const char* convert( MAV_MODE_FLAG mavModeFag );
 };
 

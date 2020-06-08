@@ -138,6 +138,7 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 						mavlink_rc_channels_t rcChannels;
 						mavlink_msg_rc_channels_decode( &mavlinkMessage, &rcChannels );
 
+						_systemBootTimeMilliseconds = rcChannels.time_boot_ms;
 						_mavlinkEventReceiver->onRCChannels( rcChannels );
 					}
 					break;
@@ -156,9 +157,9 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 	return false;
 }
 
-bool MAVLinkReader::tick()
+void MAVLinkReader::tick()
 {
-	return false;
+	
 }
 
 uint32_t MAVLinkReader::getMissionTime()

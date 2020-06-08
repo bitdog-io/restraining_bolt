@@ -136,7 +136,7 @@ void setup()
 
 
 		// Setup the mavlink reader and monitor
-		eventReceiver = new MissionMonitor();
+		eventReceiver = new MissionMonitor(configuration->getSecondsBeforeEmergencyStop());
 
 		if ( configuration->getTesting() == false )
 		{
@@ -157,7 +157,7 @@ void setup()
 		}
 		else
 		{
-			Log.trace( "Using serial fpr MAVLink" );
+			Log.trace( "Using real time MAVLink over serial 1" );
 			Log.trace( "Restraining bolt starting...." );
 			mavlinkReader = new SerialMAVLinkReader( &Serial1, eventReceiver );
 
@@ -166,16 +166,10 @@ void setup()
 		/**
 		 * @brief 
 		 * Running a mission live or from file require to different mission timing solutions.
-		 * File uses the recorded time in MAVLink packets while live uses the local clock
+		 * File uses the recorded time in MAVLink packets while live uses local millis()
 		*/
 		eventReceiver->setMissionTimeCallback( []() {return mavlinkReader->getMissionTime(); } );
 
-
-
-		// Blink Task
-		blinkTask.set( TASK_MILLISECOND * 1000, TASK_FOREVER, &blinkTick );
-		scheduler.addTask( blinkTask );
-		blinkTask.enable();
 
 		// Read from MAVLink task
 		readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &mavlinkReaderTick ); 
@@ -187,6 +181,7 @@ void setup()
 		scheduler.addTask( missionMonitorTask );
 		missionMonitorTask.enable();
 
+		SetupSucceeded();
 	}
 
 	
@@ -214,6 +209,14 @@ void SetupFailed(int errorCode)
 	scheduler.addTask( blinkTask );
 	blinkTask.enable();
 
+}
+
+void SetupSucceeded()
+{
+	// Blink Task
+	blinkTask.set( TASK_MILLISECOND * 1000, TASK_FOREVER, &blinkTick );
+	scheduler.addTask( blinkTask );
+	blinkTask.enable();
 }
 
 /**

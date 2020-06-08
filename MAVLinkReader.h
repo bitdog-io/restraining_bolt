@@ -13,15 +13,35 @@
 
 #include "MAVLinkEventReceiver.h"
 
+/**
+ * @brief Base class for reading MAVLink message from a byte source. The messages captured create events to be sent to a MAVLinkEventReceiver
+*/
 class MAVLinkReader
 {
 
 public:
+	/**
+	 * @brief Constructor
+	 * @param mavlinkEventReceiver The event receiver to send events to when a message is received.
+	 *
+	*/
 	MAVLinkReader( MAVLinkEventReceiver* mavlinkEventReceiver );
 
-	virtual void start() {};
+	/**
+	 * @brief Base function for reading MAVLink bytes from source
+	 * @return True if a complete message has been read from source
+	*/
 	virtual bool receiveMAVLinkMessages();
-	virtual bool tick();
+
+	/**
+	 * @brief This is used by the scheduling system to give the MAVLink reader execution time
+	*/
+	virtual void tick();
+
+	/**
+	 * @brief Get the mission time in milliseconds
+	 * @return Milliseconds for mission time
+	*/
 	virtual uint32_t getMissionTime();
 
 protected:

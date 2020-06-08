@@ -16,11 +16,7 @@ FileMAVLinkReader::FileMAVLinkReader( const char* mavlinkLogFilePath, MAVLinkEve
 {
 	_nextIntervalMAVLinkMilliseconds = fileSpeedMilliseconds;
 	_mavlinkLogFilePath = mavlinkLogFilePath;
-	start();
-}
 
-void FileMAVLinkReader::start()
-{
 	if ( !SD.exists( _mavlinkLogFilePath ) )
 	{
 		Log.trace( "Cannot find MAVLink file: %s", _mavlinkLogFilePath );
@@ -32,12 +28,13 @@ void FileMAVLinkReader::start()
 	}
 }
 
+
 bool FileMAVLinkReader::readByte( uint8_t* buffer )
 {
 	return _mavlinkFile.readBytes( buffer, 1 ) == 1;
 }
 
-bool FileMAVLinkReader::tick()
+void FileMAVLinkReader::tick()
 {
 	unsigned long currentMillisMAVLink = millis();
 
@@ -50,7 +47,6 @@ bool FileMAVLinkReader::tick()
 
 	}
 
-	return true;
 }
 
 
