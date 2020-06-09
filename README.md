@@ -18,7 +18,7 @@ while in automated flight. If the software detects that progress isn't being mad
 the direction of the target waypoint, a PWM signal from the Teensy GPIO will enable propulsion system shutdown.
 
 I picked Teensy 4.1 hardware for this project for a variety of reasons. Firstly, its one of the few Arduino
-based boards that have enough ram to use the MALLink C library without modification. It also provides an
+based boards that have enough ram to use the MAVLink C library without modification. It also provides an
 onboard SD card slot. And finalily, it has pretty decent hardware to make sound. I plan on using this last
 feature to enable Restraining Bolt to verablly announce important state changes and warnings.
 
@@ -38,7 +38,7 @@ I have include the external libraries as a zip under /libraries. You will need t
 and move the extracted folders to (if you use Windows)  C:\Users\yourusername\Documents\Arduino\libraries.
 
 Note: Most of the libraries I use like Arduino-Log, sdconfigfile, and TaskScheduler can be found as public
-libraries in the Arduino IDE. I also use mavlink2 which I cobbled together from
+libraries in the Arduino IDE. I also use mavlink2 which I downloaded from
 [GitHub mavlink/c_library_v2](https://github.com/mavlink/c_library_v2) repo. I modified it a bit to eliminate any
 compiler warning that might confuse users.
 
@@ -51,8 +51,24 @@ I used [TTSAutomate](https://ttsautomate.com/) to generate the voice prompts use
 then use it to open english.psv which can be found in this repo. Any newly generated prompts need to be copied to the 
 SD card under /sounds.
 
+## Usage
+Plug Teensy's serial 1 line into a telemetry port on the flight controller. Make sure to go into Mission Planner and set 
+the protocol for the telemtry port on the flight controller as MAVLink 2 with a baud rate of 57600. 
+
+## Operation
+When Restraining Bolt starts it begins consuming MAVLink 2.0 telemetry messages from the flight controller. It first sends
+a PWM signal to an RC relay that will enable power for the rover drivetrain. It also also sends a signal to disable an optional 
+alarm. It will detect when the rover is put into AUTO mode and start monitoring the mission. If there is a failure of telemtry
+coming from the flight controller, or if the rover swings off course for X seconds, then the software will stop sending PWM signal
+to the RC rely thus killing power. It will also send signal to the optional alarm. If the optional amp and speaker are attached,
+it will also verbally announce state changes and alarms.
+
+I used PWM based RC relays as a form of secondary hardware check. It is very unlikely that a bad microcontroller would still produce a good
+PWM signal to the RC relay and power the rover.
+
 ## Future
-I plan on creating a gas engine monitor and control system and include it as an optional feature in ths software
+I plan on creating a gas engine monitor and control system and include it as an optional feature in ths software.
+Add secondary GPS checking via serial port.
 
 
 
