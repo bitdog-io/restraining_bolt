@@ -20,7 +20,7 @@ the direction of the target waypoint, a PWM signal from the Teensy GPIO will ena
 I picked Teensy 4.1 hardware for this project for a variety of reasons. Firstly, its one of the few Arduino
 based boards that have enough ram to use the MAVLink C library without modification. It also provides an
 onboard SD card slot. And finalily, it has pretty decent hardware to make sound. I plan on using this last
-feature to enable Restraining Bolt to verablly announce important state changes and warnings.
+feature to enable Restraining Bolt to verbally announce important state changes and warnings.
 
 ## Getting started
 The things you will need:
