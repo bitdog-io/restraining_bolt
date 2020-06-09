@@ -51,24 +51,34 @@ I used [TTSAutomate](https://ttsautomate.com/) to generate the voice prompts use
 then use it to open english.psv which can be found in this repo. Any newly generated prompts need to be copied to the 
 SD card under /sounds.
 
-## Usage
+## Setup
 Plug Teensy's serial 1 line into a telemetry port on the flight controller. Make sure to go into Mission Planner and set 
-the protocol for the telemtry port on the flight controller as MAVLink 2 with a baud rate of 57600. 
+the protocol for the telemetry port on the flight controller as MAVLink 2 with a baud rate of 57600. 
+
+Attach pin 33 to the power system RC relay;
+Attach pin 36 to the optional alarm RC relay;
+Attach optional amp and speaker to MQSL (left) and MQSR (right) for stereo, or just MQSL for mono. All prompts are generated in mono.
+
+Note: Be very careful, the pinout diagrams provided by pjrc.com show logical pin numbers, not physical. Logical pin 12 is not the 
+same as counting to pin 12 on the pcb. Diagram [here](https://www.pjrc.com/wp-content/uploads/2020/05/teensy41_card.png)
 
 ## Operation
 When Restraining Bolt starts it begins consuming MAVLink 2.0 telemetry messages from the flight controller. It first sends
 a PWM signal to an RC relay that will enable power for the rover drivetrain. It also also sends a signal to disable an optional 
-alarm. It will detect when the rover is put into AUTO mode and start monitoring the mission. If there is a failure of telemtry
+alarm. It will detect when the rover is put into AUTO mode and start monitoring the mission. If there is a failure of telemetry
 coming from the flight controller, or if the rover swings off course for X seconds, then the software will stop sending PWM signal
 to the RC rely thus killing power. It will also send signal to the optional alarm. If the optional amp and speaker are attached,
-it will also verbally announce state changes and alarms.
+it will also verbally announce state changes and alarms. When the filght controller is put back to a mode other than manual, it will 
+then resume good signals to power the rover.
 
 I used PWM based RC relays as a form of secondary hardware check. It is very unlikely that a bad microcontroller would still produce a good
 PWM signal to the RC relay and power the rover.
 
 ## Future
-I plan on creating a gas engine monitor and control system and include it as an optional feature in ths software.
-Add secondary GPS checking via serial port.
+ - I plan on creating a gas engine monitor and control system and include it as an optional feature in ths software.
+ - I might also add secondary GPS checking via serial port. 
+ - LCD display screen might also be nice.
+ - Sending back MAVLink updates from Restraining Bolt to listening base stations might be useful .
 
 
 
