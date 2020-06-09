@@ -68,8 +68,8 @@ a PWM signal to an RC relay that will enable power for the rover drivetrain. It 
 alarm. It will detect when the rover is put into AUTO mode and start monitoring the mission. If there is a failure of telemetry
 coming from the flight controller, or if the rover swings off course for X seconds, then the software will stop sending PWM signal
 to the RC rely thus killing power. It will also send signal to the optional alarm. If the optional amp and speaker are attached,
-it will also verbally announce state changes and alarms. When the filght controller is put back to a mode other than manual, it will 
-then resume good signals to power the rover.
+it will also verbally announce state changes and alarms. When the filght controller is put back to a mode other than auto, it will 
+reset and resume good signals to power the rover.
 
 I used PWM based RC relays as a form of secondary hardware check. It is very unlikely that a bad microcontroller would still produce a good
 PWM signal to the RC relay and power the rover.
