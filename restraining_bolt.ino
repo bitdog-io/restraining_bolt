@@ -90,7 +90,7 @@ Blinker blinker;
 
 
 /**
-* @Brief  
+* @Brief
 * Initialize logging, onboard LED, and start task scheduler
 *
 */
@@ -125,7 +125,7 @@ void setup()
 		// Read configuration if it exists
 		configuration = new Configuration();
 
-		if ( ! configuration->init( CONFIG_FILE_NAME ) )
+		if ( !configuration->init( CONFIG_FILE_NAME ) )
 		{
 			Log.trace( "Using defaults, configuration file not found: %s", CONFIG_FILE_NAME );
 		}
@@ -136,15 +136,15 @@ void setup()
 
 
 		// Setup the mavlink reader and monitor
-		eventReceiver = new MissionMonitor(configuration->getSecondsBeforeEmergencyStop());
+		eventReceiver = new MissionMonitor( configuration->getSecondsBeforeEmergencyStop(), (GPS_FIX_TYPE) configuration->getLowestGPSFixType() );
 
-		if ( configuration->getTesting() == true )
+		if ( configuration->getTesting() == false )
 		{
 			if ( SD.exists( configuration->getTestFileName() ) )
 			{
 				Log.trace( "Using MAVLink test file: %s at %d milliseconds per message", configuration->getTestFileName(), configuration->getFileSpeedMilliseconds() );
 				Log.trace( "Restraining bolt starting...." );
-				mavlinkReader = new FileMAVLinkReader( configuration->getTestFileName(), eventReceiver , configuration->getFileSpeedMilliseconds());
+				mavlinkReader = new FileMAVLinkReader( configuration->getTestFileName(), eventReceiver, configuration->getFileSpeedMilliseconds() );
 
 			}
 			else
@@ -164,7 +164,7 @@ void setup()
 		}
 
 		/**
-		 * @brief 
+		 * @brief
 		 * Running a mission live or from file require to different mission timing solutions.
 		 * File uses the recorded time in MAVLink packets while live uses local millis()
 		*/
@@ -172,7 +172,7 @@ void setup()
 
 
 		// Read from MAVLink task
-		readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &mavlinkReaderTick ); 
+		readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &mavlinkReaderTick );
 		scheduler.addTask( readMAVLinkTask );
 		readMAVLinkTask.enable();
 
@@ -184,12 +184,12 @@ void setup()
 		setupSucceeded();
 	}
 
-	
+
 
 }
 
 /**
- * @brief 
+ * @brief
  * Main program loop provides execution thread to scheduler
 */
 void loop()
@@ -202,7 +202,7 @@ void loop()
  * @brief This method will blink the onboard LED with a pattern for a specific error code
  * @param errorCode The code for the error that occured
 */
-void setupFailed(int errorCode)
+void setupFailed( int errorCode )
 {
 	// Blink Task
 	blinkTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &blinkTick );
@@ -220,7 +220,7 @@ void setupSucceeded()
 }
 
 /**
- * @brief MAVLinkReader callback for scheduler 
+ * @brief MAVLinkReader callback for scheduler
 */
 void mavlinkReaderTick()
 {

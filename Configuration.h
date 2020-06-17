@@ -52,11 +52,14 @@ public:
     */
 	uint32_t getSecondsBeforeEmergencyStop();
 
+	uint8_t getLowestGPSFixType();
+
 private:
 	bool _testing = false;
 	const char* _testFileName = "test.log";
 	uint8_t _fileSpeedMilliseconds = 10; ///< How fast to read the evetns from file. Don't go lower than 10 else the mission monitor will not keep up.
 	uint32_t _secondsBeforeEmergencyStop = 10;
+	uint8_t _lowestGPSFixType = 5;
 };
 
 #endif
