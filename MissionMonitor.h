@@ -51,6 +51,8 @@ protected:
 	*/
 	virtual void start();
 
+	virtual void play( ROVER_MODE roverMode);
+
 	ROVER_MODE _roverMode = ROVER_MODE_INITIALIZING; // Initialize the rover filght mode
 	MAV_MODE_FLAG _mavModeFlag = MAV_MODE_FLAG_ENUM_END;
 	int16_t _lastDistanceToWaypoint = -1;

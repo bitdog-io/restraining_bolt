@@ -71,6 +71,9 @@ to the RC rely thus killing power. It will also send signal to the optional alar
 it will also verbally announce state changes and alarms. When the filght controller is put back to a mode other than auto, it will 
 reset and resume good signals to power the rover.
 
+Restraining Bolt also monitors GPS fix status. If a minimum fix status isn't maintained by at least one GPS, Restraining Bolt will 
+attempt to pause the mission until at least one GPS is reporting minimum fix status.
+
 I used PWM based RC relays as a form of secondary hardware check. It is very unlikely that a bad microcontroller would still produce a good
 PWM signal to the RC relay and power the rover.
 

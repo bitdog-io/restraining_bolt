@@ -14,13 +14,27 @@
 constexpr auto READY_SOUND = "sounds/ready.wav";
 constexpr auto MAVLINK_GOOD_SOUND = "sounds/mlgood.wav";
 constexpr auto MOTORS_ARMED_SOUND = "sounds/armed.wav";
-constexpr auto AUTO_MODE_SOUND = "sounds/auto.wav";
 constexpr auto EMERGENCY_STOP_SOUND = "sounds/estop.wav";
 constexpr auto MAVLINK_BAD_SOUND = "sounds/mlbad.wav";
 constexpr auto PROGRESS_STOPPED_SOUND = "sounds/stopped.wav";
 constexpr auto WRONG_DIRECTION_SOUND = "sounds/wrongdir.wav";
-constexpr auto NOT_AUTO_SOUND = "sounds/autostop.wav";
 constexpr auto MISSION_END_SOUND = "sounds/ended.wav";
+
+constexpr auto AUTO_MODE_SOUND = "sounds/auto.wav";
+constexpr auto MANUAL_MODE_SOUND = "sounds/manual.wav";
+constexpr auto HOLD_MODE_SOUND = "sounds/hold.wav";
+constexpr auto ACRO_MODE_SOUND = "sounds/acro.wav";
+constexpr auto RTL_MODE_SOUND = "sounds/rtl.wav";
+constexpr auto SRTL_MODE_SOUND = "sounds/srtl.wav";
+constexpr auto GUIDED_MODE_SOUND = "sounds/guided.wav";
+constexpr auto STEERING_MODE_SOUND = "sounds/steering.wav";
+constexpr auto LOITER_MODE_SOUND = "sounds/loiter.wav";
+
+constexpr auto ENGINE_STOPPED_SOUND = "sounds/engstop.wav";
+constexpr auto ENGINE_STARTING_SOUND = "sounds/engstart.wav";
+constexpr auto ENGINE_RUNNING_SOUND = "sounds/engrun.wav";
+
+
 
 constexpr int FILE_QUEUE_SIZE = 20;
 constexpr int MAX_FILEPATH_SIZE = 255;
