@@ -89,6 +89,7 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 					{
 						mavlink_gps_raw_int_t gpsRaw;
 						mavlink_msg_gps_raw_int_decode( &mavlinkMessage, &gpsRaw );
+
 						_mavlinkEventReceiver->onGPSRawInt( gpsRaw );
 
 					}
@@ -96,11 +97,10 @@ bool MAVLinkReader::receiveMAVLinkMessages()
 
 				case MAVLINK_MSG_ID_GPS_INPUT: // 232
 					{
-						mavlink_gps_input_t gpsInput;
+						mavlink_gps_input_t  gpsInput;
 						mavlink_msg_gps_input_decode( &mavlinkMessage, &gpsInput );
 
 						_mavlinkEventReceiver->onGPSInput( gpsInput );
-
 					}
 					break;
 

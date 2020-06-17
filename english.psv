@@ -6,5 +6,12 @@
 |mlbad|Lost communication with flight controller 
 |stopped|Progress stopped
 |wrongdir|Wrong direction
-|autostop|Manual control
+|autostop|Manual mode
 |ended|Mission ended
+|hold|Hold mode
+|acro|Acro mode
+|rtl|Return to land mode
+|srtl|return to land mode smart 
+|guided|Guided mode
+|steering|Steering mode
+|Loiter|Loiter mode

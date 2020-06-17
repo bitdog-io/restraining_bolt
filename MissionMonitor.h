@@ -54,6 +54,7 @@ protected:
 	MAV_MODE_FLAG _mavModeFlag = MAV_MODE_FLAG_ENUM_END;
 	int16_t _lastDistanceToWaypoint = -1;
 	unsigned long _lastProgressMadeTimeMilliseconds = 0;
+	unsigned long _lastHeartbeatTimeMilliseconds = 0;
 	uint16_t _currentWaypointSequenceId = 0;
 	bool _firstHeartbeat = false;
 	bool _firstTick = false;

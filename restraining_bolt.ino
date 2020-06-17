@@ -44,7 +44,7 @@
 #include <Audio.h>
 #include <Wire.h>
 #include <SPI.h>
-#include <SdFat.h>
+#include <Sd.h>
 #include <SerialFlash.h>
 
 #include <ArduinoLog.h>
@@ -115,7 +115,7 @@ void setup()
 	if ( !SD.begin( BUILTIN_SDCARD ) )
 	{
 		Log.error( "Could not read SD card" );
-		SetupFailed( FAILED_NO_SD );
+		setupFailed( FAILED_NO_SD );
 		return;
 	}
 	else
@@ -138,7 +138,7 @@ void setup()
 		// Setup the mavlink reader and monitor
 		eventReceiver = new MissionMonitor(configuration->getSecondsBeforeEmergencyStop());
 
-		if ( configuration->getTesting() == false )
+		if ( configuration->getTesting() == true )
 		{
 			if ( SD.exists( configuration->getTestFileName() ) )
 			{
@@ -150,7 +150,7 @@ void setup()
 			else
 			{
 				Log.error( "Cound not find test file: %s", configuration->getTestFileName() );
-				SetupFailed( FAILED_NO_TEST_FILE );
+				setupFailed( FAILED_NO_TEST_FILE );
 				return;
 
 			}
@@ -181,7 +181,7 @@ void setup()
 		scheduler.addTask( missionMonitorTask );
 		missionMonitorTask.enable();
 
-		SetupSucceeded();
+		setupSucceeded();
 	}
 
 	
@@ -202,7 +202,7 @@ void loop()
  * @brief This method will blink the onboard LED with a pattern for a specific error code
  * @param errorCode The code for the error that occured
 */
-void SetupFailed(int errorCode)
+void setupFailed(int errorCode)
 {
 	// Blink Task
 	blinkTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &blinkTick );
@@ -211,7 +211,7 @@ void SetupFailed(int errorCode)
 
 }
 
-void SetupSucceeded()
+void setupSucceeded()
 {
 	// Blink Task
 	blinkTask.set( TASK_MILLISECOND * 1000, TASK_FOREVER, &blinkTick );
