@@ -16,6 +16,8 @@ MissionMonitor::MissionMonitor( uint32_t secondsBeforeEmergencyStop )
 
 void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 {
+	_lastHeartbeatTimeMilliseconds = getMissionTime();
+
 	// Check for state change
 	if ( mavlink_heartbeat.type == (uint8_t)MAV_TYPE_GROUND_ROVER )
 	{
@@ -61,9 +63,9 @@ void MissionMonitor::onNavControllerOutput( mavlink_nav_controller_output_t mavl
 	else if ( _lastDistanceToWaypoint == mavlink_nav_controller.wp_dist )
 	{
 		//Log.trace( "Distance to waypoint is %d Mission Time: %d", mavlink_nav_controller.wp_dist,getMissionTime() );
-		
+
 		// if the last report was going in the wrong direction, don't capture time as progress being made
-		if(!_wrongDirection )
+		if ( !_wrongDirection )
 			progressMade = true;
 	}
 	else if ( _lastDistanceToWaypoint < mavlink_nav_controller.wp_dist )
@@ -104,7 +106,8 @@ void MissionMonitor::onMissionCurrent( mavlink_mission_current_t mavlink_mission
 
 void MissionMonitor::onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int )
 {
-	MAVLinkEventReceiver::onGPSRawInt( mavlink_gps_raw_int );
+	//Log.trace( "GPS Status: %d\r\n", mavlink_gps_raw_int.fix_type );
+
 }
 
 
@@ -114,7 +117,7 @@ void MissionMonitor::tick()
 {
 	evaluateMission();
 
-	if ( ! _firstTick )
+	if ( !_firstTick )
 	{
 		_firstTick = true;
 		_audioPlayer.play( READY_SOUND );
@@ -132,11 +135,14 @@ void MissionMonitor::tick()
 void MissionMonitor::evaluateMission()
 {
 	uint32_t  missionTime = getMissionTime();
-	uint32_t timeDifference =  missionTime - _lastProgressMadeTimeMilliseconds;
+	uint32_t timeDifference = missionTime - _lastProgressMadeTimeMilliseconds;
+	bool mavlinkLost = _firstHeartbeat && missionTime - _lastHeartbeatTimeMilliseconds >= (_secondsBeforeEmergencyStop * 1000);
+
+
 
 	if ( !_isFailed )
 	{
-		if ( _roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference > (_secondsBeforeEmergencyStop * 1000) )
+		if ( mavlinkLost || (_roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference >= (_secondsBeforeEmergencyStop * 1000)) )
 		{
 			Log.trace( "*************** SHUTDOWN *********************************************" );
 			Log.trace( "Last progress time: %d  mission time: %d difference: %d", _lastProgressMadeTimeMilliseconds, missionTime, timeDifference );
@@ -154,6 +160,12 @@ void MissionMonitor::evaluateMission()
 				_audioPlayer.play( WRONG_DIRECTION_SOUND );
 			}
 		}
+	}
+
+	if ( mavlinkLost )
+	{
+		_firstHeartbeat = false;
+		_audioPlayer.play( MAVLINK_BAD_SOUND );
 	}
 }
 

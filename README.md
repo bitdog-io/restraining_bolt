@@ -11,14 +11,14 @@ unfortuantely, that is not always a valid solution. Having a rover off its path,
 but still within a valid geo-fenced area, can still be a dangerous situation. I discovered
 I couldn't depend on just the flight controller, geo-fenced areas, or my reaction time for safety. That is why I made this project. Restraining Bolt is designed to make sure your robot doesn't run away.
 
-This softare enables Teensy 4.1 microcontrollers to become simple onboard companion computers 
+This software enables Teensy 4.1 microcontrollers to become simple onboard companion computers 
 for ArduPilot based rovers. It integrates with ArduPilot via MAVLink protocol over 
 serial telemetry to determine if the connected rover is progressing towards waypoints 
 while in automated flight. If the software detects that progress isn't being made in 
 the direction of the target waypoint, a PWM signal from the Teensy GPIO will enable propulsion system shutdown.
 
 I picked Teensy 4.1 hardware for this project for a variety of reasons. Firstly, its one of the few Arduino
-based boards that have enough ram to use the MAVLink C library without modification. It also provides an
+based boards that have enough RAM to use the MAVLink C library without modification. It also provides an
 onboard SD card slot. And finalily, it has pretty decent hardware to make sound. I plan on using this last
 feature to enable Restraining Bolt to verbally announce important state changes and warnings.
 

@@ -12,8 +12,11 @@ constexpr int OFF = 0;
 
 ServoRelay::ServoRelay()
 {
-	_pwmPowerSystemRelay.attach( POWER_SYSTEM_RELAY_PIN );
-	_pwmPowerSystemRelay.attach( ALARM_RELAY_PIN );
+	_pwmPowerSystemRelay.attach( POWER_SYSTEM_RELAY_PIN,900,2200 );
+	_pwmPowerSystemRelay.attach( ALARM_RELAY_PIN,900,2200 );
+	alarmRelayOff();
+	powerRelayOff();
+
 }
 
 void ServoRelay::powerRelayOff()
