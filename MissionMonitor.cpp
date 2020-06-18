@@ -9,9 +9,10 @@
 #include "AudioPlayer.h"
 
 
-MissionMonitor::MissionMonitor( uint32_t secondsBeforeEmergencyStop )
+MissionMonitor::MissionMonitor( uint32_t secondsBeforeEmergencyStop, GPS_FIX_TYPE lowestGpsFixTpye )
 {
 	_secondsBeforeEmergencyStop = secondsBeforeEmergencyStop;
+	_lowestGpsFixTpye = lowestGpsFixTpye;
 }
 
 void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
@@ -27,6 +28,7 @@ void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 			MAV_MODE_FLAG mavModeFlag = (MAV_MODE_FLAG)mavlink_heartbeat.base_mode;
 
 			Log.trace( "Rover mode changed from %s to %s ", EnumHelper::convert( _roverMode ), EnumHelper::convert( roverMode ) );
+			play( roverMode );
 
 			_mavModeFlag = mavModeFlag;
 			_roverMode = roverMode;
@@ -106,7 +108,13 @@ void MissionMonitor::onMissionCurrent( mavlink_mission_current_t mavlink_mission
 
 void MissionMonitor::onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int )
 {
-	//Log.trace( "GPS Status: %d\r\n", mavlink_gps_raw_int.fix_type );
+	_gps1FixType = (GPS_FIX_TYPE)mavlink_gps_raw_int.fix_type;
+
+}
+
+void MissionMonitor::onGPS2Raw( mavlink_gps2_raw_t mavlink_gps2_raw )
+{
+	_gps2FixType = (GPS_FIX_TYPE)mavlink_gps2_raw.fix_type;
 
 }
 
@@ -136,22 +144,43 @@ void MissionMonitor::evaluateMission()
 {
 	uint32_t  missionTime = getMissionTime();
 	uint32_t timeDifference = missionTime - _lastProgressMadeTimeMilliseconds;
+	uint8_t maxGPSFixType = max( _gps1FixType, _gps2FixType );
+
+	// Check if the rover is in auto mode
+	bool isAutoMode = _roverMode == ROVER_MODE_AUTO;
+
+	// MAVLink is lost if the last heartbeat was received over _secondsBeforeEmergencyStop seconds ago
 	bool mavlinkLost = _firstHeartbeat && missionTime - _lastHeartbeatTimeMilliseconds >= (_secondsBeforeEmergencyStop * 1000);
 
+	// GPS is lost if the fix type drops below _lowestGpsFixTpye
+	bool gpsLost = maxGPSFixType < _lowestGpsFixTpye;
+
+	// The rover is no longer making progress if the last time it closed the distance to the next waypoint was over _secondsBeforeEmergencyStop seconds
+	bool noProgress = _lastProgressMadeTimeMilliseconds != 0 && timeDifference >= (_secondsBeforeEmergencyStop * 1000);
 
 
 	if ( !_isFailed )
 	{
-		if ( mavlinkLost || (_roverMode == ROVER_MODE_AUTO && _lastProgressMadeTimeMilliseconds != 0 && timeDifference >= (_secondsBeforeEmergencyStop * 1000)) )
+		if ( (mavlinkLost || gpsLost || noProgress) && isAutoMode )
 		{
 			Log.trace( "*************** SHUTDOWN *********************************************" );
-			Log.trace( "Last progress time: %d  mission time: %d difference: %d", _lastProgressMadeTimeMilliseconds, missionTime, timeDifference );
+
+			if ( noProgress )
+				Log.trace( "Last progress time: %d ", round(missionTime - _lastHeartbeatTimeMilliseconds) );
+
+			if ( mavlinkLost )
+				Log.trace( "MAVLink lost" );
+
+			if ( gpsLost )
+				Log.trace( "GPS lost, current fix type: %d", maxGPSFixType );
+
 			Log.trace( "**********************************************************************" );
+
 
 			failMission();
 
 		}
-		else if ( _roverMode == ROVER_MODE_AUTO )
+		else if ( isAutoMode )
 		{
 			if ( _wrongDirectionCount == 2 )
 			{
@@ -188,14 +217,45 @@ void MissionMonitor::start()
 	_servoRelay.powerRelayOn();
 	_servoRelay.alarmRelayOff();
 
-	// If we have gone to auto
-	if ( _roverMode == ROVER_MODE_AUTO )
+
+}
+
+void MissionMonitor::play( ROVER_MODE roverMode )
+{
+	switch ( roverMode )
 	{
-		_audioPlayer.play( AUTO_MODE_SOUND );
-	}
-	else // we have changed to a mode other than auto
-	{
-		_audioPlayer.play( NOT_AUTO_SOUND );
+		case ROVER_MODE_MANUAL:
+			_audioPlayer.play( MANUAL_MODE_SOUND );
+			break;
+		case ROVER_MODE_ACRO:
+			_audioPlayer.play( ACRO_MODE_SOUND );
+			break;
+		case ROVER_MODE_STEERING:
+			_audioPlayer.play( STEERING_MODE_SOUND );
+			break;
+		case ROVER_MODE_HOLD:
+			_audioPlayer.play( HOLD_MODE_SOUND );
+			break;
+		case ROVER_MODE_LOITER:
+			_audioPlayer.play( LOITER_MODE_SOUND );
+			break;
+		case ROVER_MODE_AUTO:
+			_audioPlayer.play( AUTO_MODE_SOUND );
+			break;
+		case ROVER_MODE_RTL:
+			_audioPlayer.play( RTL_MODE_SOUND );
+			break;
+		case ROVER_MODE_SMART_RTL:
+			_audioPlayer.play( SRTL_MODE_SOUND );
+			break;
+		case ROVER_MODE_GUIDED:
+			_audioPlayer.play( GUIDED_MODE_SOUND );
+			break;
+		case ROVER_MODE_INITIALIZING:
+			break;
+		case ROVER_MODE_ENUM_END:
+			break;
+
 	}
 }
 

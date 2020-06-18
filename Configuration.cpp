@@ -43,6 +43,9 @@ bool Configuration::init( const char* configurationFilePath )
             case str2int( "secondsBeforeEmergencyStop" ):
                 _secondsBeforeEmergencyStop = configFile.getIntValue();
                 break;
+            case str2int( "lowestGPSFixType" ):
+                _lowestGPSFixType = configFile.getIntValue();
+                break;
         }
     }
     configFile.end();
@@ -69,5 +72,10 @@ uint8_t Configuration::getFileSpeedMilliseconds()
 uint32_t Configuration::getSecondsBeforeEmergencyStop()
 {
     return _secondsBeforeEmergencyStop;
+}
+
+uint8_t Configuration::getLowestGPSFixType()
+{
+    return _lowestGPSFixType;
 }
 

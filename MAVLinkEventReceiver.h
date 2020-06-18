@@ -26,6 +26,7 @@ public:
 	virtual void onNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller );
 	virtual void onMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached );
 	virtual void onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int );
+	virtual void onGPS2Raw( mavlink_gps2_raw_t mavlink_gps2_raw );
 	virtual void onMissionCurrent( mavlink_mission_current_t mavlink_mission_current );
 	virtual void onRCChannels( mavlink_rc_channels_t mavlink_rc_channels );
 	virtual void onSystemTime( mavlink_system_time_t mavlink_system_time );

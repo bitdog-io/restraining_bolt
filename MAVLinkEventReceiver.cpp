@@ -33,7 +33,7 @@ void MAVLinkEventReceiver::onRawIMU( mavlink_raw_imu_t mavlink_raw_imu )
 
 void MAVLinkEventReceiver::onGPSInput( mavlink_gps_input_t mavlink_gps_input )
 {
-	//Log.trace( "Got GPS input" );
+	//Log.trace( "Got GPS input %d" , mavlink_gps_input.fix_type);
 }
 
 void MAVLinkEventReceiver::onNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller )
@@ -49,6 +49,11 @@ void MAVLinkEventReceiver::onMissionItemReached( mavlink_mission_item_reached_t 
 void MAVLinkEventReceiver::onGPSRawInt( mavlink_gps_raw_int_t mavlink_gps_raw_int )
 {
 	//Log.trace( "Got GPS raw" );
+}
+
+void MAVLinkEventReceiver::onGPS2Raw( mavlink_gps2_raw_t mavlink_gps2_raw )
+{
+	//Log.trace( "Got GPS2 raw" );
 }
 
 void MAVLinkEventReceiver::onMissionCurrent( mavlink_mission_current_t mavlink_mission_current )

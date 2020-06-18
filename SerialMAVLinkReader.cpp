@@ -99,7 +99,7 @@ void SerialMAVLinkReader::sendMAVLinkHeartbeat()
 	uint16_t messageLength = 0;
 	mavlink_message_t mavlinkMessage;
 
-	Log.trace( "Sending heartbeat message" );
+	//Log.trace( "Sending heartbeat message" );
 
 	// Pack the MAVLink heartbeat message
 	mavlink_msg_heartbeat_pack( _sysid, _compid, &mavlinkMessage, _type, _autopilotType, _systemMode, _customMode, _systemState );
