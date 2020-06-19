@@ -35,7 +35,7 @@ bool Configuration::init( const char* configurationFilePath )
                 _testing = configFile.getBooleanValue();
                 break;
             case str2int("testFileName"):
-                _testFileName = configFile.getValue();
+                _testFileName = configFile.copyValue();
                 break;
             case str2int( "fileSpeedMilliseonds" ):
                 _fileSpeedMilliseconds = configFile.getIntValue();

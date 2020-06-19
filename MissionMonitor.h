@@ -21,7 +21,7 @@
 class MissionMonitor : public MAVLinkEventReceiver
 {
 public:
-	MissionMonitor( uint32_t secondsBeforeEmergencyStop, GPS_FIX_TYPE lowestGpsFixTpye );
+	MissionMonitor( uint32_t secondsBeforeEmergencyStop, GPS_FIX_TYPE lowestGpsFixTpye, AudioPlayer* audioPlayer );
 	virtual void onHeatbeat( mavlink_heartbeat_t  mavlink_heartbeat );
 	virtual void onMissionItemReached( mavlink_mission_item_reached_t mavlink_mission_item_reached );
 	virtual void onNavControllerOutput( mavlink_nav_controller_output_t mavlink_nav_controller );
@@ -73,7 +73,7 @@ protected:
 
 private:
 	ServoRelay _servoRelay;
-	AudioPlayer _audioPlayer;
+	AudioPlayer* _audioPlayer;
 
 };
 
