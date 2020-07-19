@@ -75,6 +75,9 @@ bool setupStatus = -1;
 //Configuration file settings
 Configuration* configuration;
 
+// Audio player
+AudioPlayer* audioPlayer;
+
 //MAVLink event receiverand reader
 MAVLinkEventReceiver* eventReceiver;
 MAVLinkReader* mavlinkReader;
@@ -84,6 +87,7 @@ Scheduler scheduler;
 Task blinkTask;
 Task readMAVLinkTask;
 Task missionMonitorTask;
+Task audioPlayerTask;
 
 //Blinker
 Blinker blinker;
@@ -97,7 +101,12 @@ Blinker blinker;
 void setup()
 {
 
+	// Run audio player task
 	AudioMemory( 40 );
+	audioPlayer = new AudioPlayer();
+	audioPlayerTask.set( TASK_MILLISECOND * 250, TASK_FOREVER, &audioPlayerTick );
+	scheduler.addTask( audioPlayerTask );
+	audioPlayerTask.enable();
 
 	// Inialize onboard LED
 	pinMode( LED_BUILTIN, OUTPUT );
@@ -116,6 +125,7 @@ void setup()
 	{
 		Log.error( "Could not read SD card" );
 		setupFailed( FAILED_NO_SD );
+		audioPlayer->play( NO_STORAGE_CARD_SOUND );
 		return;
 	}
 	else
@@ -136,21 +146,24 @@ void setup()
 
 
 		// Setup the mavlink reader and monitor
-		eventReceiver = new MissionMonitor( configuration->getSecondsBeforeEmergencyStop(), (GPS_FIX_TYPE) configuration->getLowestGPSFixType() );
+		eventReceiver = new MissionMonitor( configuration->getSecondsBeforeEmergencyStop(), (GPS_FIX_TYPE)configuration->getLowestGPSFixType(), audioPlayer );
 
-		if ( configuration->getTesting() == false )
+		if ( configuration->getTesting() == true )
 		{
 			if ( SD.exists( configuration->getTestFileName() ) )
 			{
 				Log.trace( "Using MAVLink test file: %s at %d milliseconds per message", configuration->getTestFileName(), configuration->getFileSpeedMilliseconds() );
 				Log.trace( "Restraining bolt starting...." );
+				audioPlayer->play( REPLAY_FROM_FILE_SOUND );
 				mavlinkReader = new FileMAVLinkReader( configuration->getTestFileName(), eventReceiver, configuration->getFileSpeedMilliseconds() );
 
 			}
 			else
 			{
-				Log.error( "Cound not find test file: %s", configuration->getTestFileName() );
+				Log.error( "Could not find test file: %s", configuration->getTestFileName() );
 				setupFailed( FAILED_NO_TEST_FILE );
+				audioPlayer->play( NO_TEST_FILE );
+
 				return;
 
 			}
@@ -241,4 +254,12 @@ void eventReceiverTick()
 void blinkTick()
 {
 	blinker.tick();
+}
+
+/**
+ * @brief Callback for audio queue
+*/
+void audioPlayerTick()
+{
+	audioPlayer->tick();
 }

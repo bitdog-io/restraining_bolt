@@ -34,6 +34,9 @@ constexpr auto ENGINE_STOPPED_SOUND = "sounds/engstop.wav";
 constexpr auto ENGINE_STARTING_SOUND = "sounds/engstart.wav";
 constexpr auto ENGINE_RUNNING_SOUND = "sounds/engrun.wav";
 
+constexpr auto NO_STORAGE_CARD_SOUND = "sounds/nosd.wav";
+constexpr auto NO_TEST_FILE = "sounds/nofile.wav";
+constexpr auto REPLAY_FROM_FILE_SOUND = "sounds/replay.wav";
 
 
 constexpr int FILE_QUEUE_SIZE = 20;

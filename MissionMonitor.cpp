@@ -9,10 +9,11 @@
 #include "AudioPlayer.h"
 
 
-MissionMonitor::MissionMonitor( uint32_t secondsBeforeEmergencyStop, GPS_FIX_TYPE lowestGpsFixTpye )
+MissionMonitor::MissionMonitor( uint32_t secondsBeforeEmergencyStop, GPS_FIX_TYPE lowestGpsFixTpye, AudioPlayer* audioPlayer )
 {
 	_secondsBeforeEmergencyStop = secondsBeforeEmergencyStop;
 	_lowestGpsFixTpye = lowestGpsFixTpye;
+	_audioPlayer = audioPlayer;
 }
 
 void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
@@ -41,7 +42,7 @@ void MissionMonitor::onHeatbeat( mavlink_heartbeat_t mavlink_heartbeat )
 	if ( _firstHeartbeat == false )
 	{
 		_firstHeartbeat = true;
-		_audioPlayer.play( MAVLINK_GOOD_SOUND );
+		_audioPlayer->play( MAVLINK_GOOD_SOUND );
 	}
 }
 
@@ -119,8 +120,6 @@ void MissionMonitor::onGPS2Raw( mavlink_gps2_raw_t mavlink_gps2_raw )
 }
 
 
-
-
 void MissionMonitor::tick()
 {
 	evaluateMission();
@@ -128,10 +127,9 @@ void MissionMonitor::tick()
 	if ( !_firstTick )
 	{
 		_firstTick = true;
-		_audioPlayer.play( READY_SOUND );
+		_audioPlayer->play( READY_SOUND );
 	}
 
-	_audioPlayer.tick();
 }
 
 /**
@@ -186,7 +184,7 @@ void MissionMonitor::evaluateMission()
 			{
 				// bump count to avoid play this sound again, its the only thing this count is being used for
 				_wrongDirectionCount += 1;
-				_audioPlayer.play( WRONG_DIRECTION_SOUND );
+				_audioPlayer->play( WRONG_DIRECTION_SOUND );
 			}
 		}
 	}
@@ -194,7 +192,7 @@ void MissionMonitor::evaluateMission()
 	if ( mavlinkLost )
 	{
 		_firstHeartbeat = false;
-		_audioPlayer.play( MAVLINK_BAD_SOUND );
+		_audioPlayer->play( MAVLINK_BAD_SOUND );
 	}
 }
 
@@ -203,7 +201,7 @@ void MissionMonitor::failMission()
 	_isFailed = true;
 	_servoRelay.powerRelayOff();
 	_servoRelay.alarmRelayOn();
-	_audioPlayer.play( EMERGENCY_STOP_SOUND );
+	_audioPlayer->play( EMERGENCY_STOP_SOUND );
 
 }
 
@@ -225,31 +223,31 @@ void MissionMonitor::play( ROVER_MODE roverMode )
 	switch ( roverMode )
 	{
 		case ROVER_MODE_MANUAL:
-			_audioPlayer.play( MANUAL_MODE_SOUND );
+			_audioPlayer->play( MANUAL_MODE_SOUND );
 			break;
 		case ROVER_MODE_ACRO:
-			_audioPlayer.play( ACRO_MODE_SOUND );
+			_audioPlayer->play( ACRO_MODE_SOUND );
 			break;
 		case ROVER_MODE_STEERING:
-			_audioPlayer.play( STEERING_MODE_SOUND );
+			_audioPlayer->play( STEERING_MODE_SOUND );
 			break;
 		case ROVER_MODE_HOLD:
-			_audioPlayer.play( HOLD_MODE_SOUND );
+			_audioPlayer->play( HOLD_MODE_SOUND );
 			break;
 		case ROVER_MODE_LOITER:
-			_audioPlayer.play( LOITER_MODE_SOUND );
+			_audioPlayer->play( LOITER_MODE_SOUND );
 			break;
 		case ROVER_MODE_AUTO:
-			_audioPlayer.play( AUTO_MODE_SOUND );
+			_audioPlayer->play( AUTO_MODE_SOUND );
 			break;
 		case ROVER_MODE_RTL:
-			_audioPlayer.play( RTL_MODE_SOUND );
+			_audioPlayer->play( RTL_MODE_SOUND );
 			break;
 		case ROVER_MODE_SMART_RTL:
-			_audioPlayer.play( SRTL_MODE_SOUND );
+			_audioPlayer->play( SRTL_MODE_SOUND );
 			break;
 		case ROVER_MODE_GUIDED:
-			_audioPlayer.play( GUIDED_MODE_SOUND );
+			_audioPlayer->play( GUIDED_MODE_SOUND );
 			break;
 		case ROVER_MODE_INITIALIZING:
 			break;
