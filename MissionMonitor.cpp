@@ -147,6 +147,9 @@ void MissionMonitor::evaluateMission()
 	// Check if the rover is in auto mode
 	bool isAutoMode = _roverMode == ROVER_MODE_AUTO;
 
+	// Check if the rover is in hold mode
+	bool isHoldMode = _roverMode == ROVER_MODE_HOLD;
+
 	// MAVLink is lost if the last heartbeat was received over _secondsBeforeEmergencyStop seconds ago
 	bool mavlinkLost = _firstHeartbeat && missionTime - _lastHeartbeatTimeMilliseconds >= (_secondsBeforeEmergencyStop * 1000);
 
@@ -159,49 +162,66 @@ void MissionMonitor::evaluateMission()
 
 	if ( !_isFailed )
 	{
-		if ( (mavlinkLost || gpsLost || noProgress) && isAutoMode )
+
+		if ( mavlinkLost )
 		{
-			Log.trace( "*************** SHUTDOWN *********************************************" );
-
-			if ( noProgress )
-				Log.trace( "Last progress time: %d ", round(missionTime - _lastHeartbeatTimeMilliseconds) );
-
-			if ( mavlinkLost )
-				Log.trace( "MAVLink lost" );
-
-			if ( gpsLost )
-				Log.trace( "GPS lost, current fix type: %d", maxGPSFixType );
-
-			Log.trace( "**********************************************************************" );
-
+			// We haven't heard from the flight controller for some time, we can't continue
+			Log.trace( "MAVLink lost" );
 
 			failMission();
 
+			_firstHeartbeat = false; // Start looking for first heartbeat again
+			_audioPlayer->play( MAVLINK_BAD_SOUND );
+
 		}
-		else if ( isAutoMode )
+
+		if ( isAutoMode )
 		{
+			if ( gpsLost )
+			{
+				// Put the rover in hold mode
+				// If the rover does go into hold mode all of the progress counters will be reset by the start() function
+				sendModeChange( ROVER_MODE_HOLD );
+
+				Log.trace( "GPS lost, current fix type: %d", maxGPSFixType );
+
+				_audioPlayer->play( GPS_SIGNAL_LOW_SOUND );
+			}
+			else if ( noProgress )
+			{
+				// We haven't made progress in the correct direction for some time, stop the rover
+				Log.trace( "Last progress time: %d ", round( missionTime - _lastHeartbeatTimeMilliseconds ) );
+				failMission();
+
+			}
+
 			if ( _wrongDirectionCount == 2 )
 			{
-				// bump count to avoid play this sound again, its the only thing this count is being used for
+				// wrong direction detected twice, play sound and bump count to avoid play this sound again, its the only thing this count is being used for
 				_wrongDirectionCount += 1;
 				_audioPlayer->play( WRONG_DIRECTION_SOUND );
 			}
 		}
+		else if ( isHoldMode && !gpsLost )
+		{
+			// We are in hold mode and gps single is good now
+			// Put the rover into auto mode after a gps signal lost
+			sendModeChange( ROVER_MODE_AUTO );
+		}
+
 	}
 
-	if ( mavlinkLost )
-	{
-		_firstHeartbeat = false;
-		_audioPlayer->play( MAVLINK_BAD_SOUND );
-	}
+
 }
 
 void MissionMonitor::failMission()
 {
+	Log.trace( "*************** SHUTDOWN *********************************************" );
 	_isFailed = true;
 	_servoRelay.powerRelayOff();
 	_servoRelay.alarmRelayOn();
 	_audioPlayer->play( EMERGENCY_STOP_SOUND );
+	Log.trace( "**********************************************************************" );
 
 }
 

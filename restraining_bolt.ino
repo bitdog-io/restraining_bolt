@@ -184,6 +184,9 @@ void setup()
 		eventReceiver->setMissionTimeCallback( []() {return mavlinkReader->getMissionTime(); } );
 
 
+		eventReceiver->setSendModeChangeCallback( []( ROVER_MODE roverMode ) { mavlinkReader->sendChangeMode(roverMode); } );
+
+
 		// Read from MAVLink task
 		readMAVLinkTask.set( TASK_MILLISECOND * 1, TASK_FOREVER, &mavlinkReaderTick );
 		scheduler.addTask( readMAVLinkTask );

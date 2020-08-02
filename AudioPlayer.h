@@ -38,6 +38,7 @@ constexpr auto NO_STORAGE_CARD_SOUND = "sounds/nosd.wav";
 constexpr auto NO_TEST_FILE = "sounds/nofile.wav";
 constexpr auto REPLAY_FROM_FILE_SOUND = "sounds/replay.wav";
 
+constexpr auto GPS_SIGNAL_LOW_SOUND = "sounds/gpslow.wav";
 
 constexpr int FILE_QUEUE_SIZE = 20;
 constexpr int MAX_FILEPATH_SIZE = 255;

@@ -18,3 +18,4 @@
 |engstop|Engine stopped
 |engstart|Engine starting
 |engrun|Engine running
+|gpslow|GPS signal is low, pausing mission, please do not approach the rover

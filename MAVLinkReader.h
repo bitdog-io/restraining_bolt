@@ -34,6 +34,12 @@ public:
 	virtual bool receiveMAVLinkMessages();
 
 	/**
+	 * @brief Semd a MavLink message to change the rover mode to the flight controller
+	 * @param roverMode 
+	*/
+	virtual void sendChangeMode( ROVER_MODE roverMode ) {};
+
+	/**
 	 * @brief This is used by the scheduling system to give the MAVLink reader execution time
 	*/
 	virtual void tick();

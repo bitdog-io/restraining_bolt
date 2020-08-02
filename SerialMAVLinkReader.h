@@ -44,6 +44,8 @@ public:
 	*/
 	virtual void tick();
 
+	virtual void sendChangeMode( ROVER_MODE roverMode);
+
 private:
 
 	// Heartbeat timer fields
@@ -63,6 +65,9 @@ private:
 	uint8_t _systemMode = MAV_MODE_AUTO_ARMED; ///< Ready to go
 	uint32_t _customMode = 0;                  ///< Custom mode, can be defined by user/adopter
 	uint8_t _systemState = MAV_STATE_STANDBY;  ///< System ready for flight
+
+	uint8_t _flight_controller_sysid = 1; ///< Id # of the flight controller
+	uint8_t _flight_controller_component = 0; ///< Target component, 0 = all
 
 };
 #endif
