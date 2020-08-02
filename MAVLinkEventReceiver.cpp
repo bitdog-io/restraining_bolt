@@ -76,8 +76,10 @@ void MAVLinkEventReceiver::setMissionTimeCallback( uint32_t( *missionTimeCallbac
 	_missionTimeCallback = missionTimeCallback;
 }
 
-
-
+void MAVLinkEventReceiver::setSendModeChangeCallback( void(*sendModeChangeCallback)(ROVER_MODE roverMode) )
+{
+	_sendModeChangeCallback = sendModeChangeCallback;
+}
 
 
 void MAVLinkEventReceiver::tick()
@@ -92,6 +94,14 @@ long long MAVLinkEventReceiver::getMissionTime()
 	else
 	{
 		return _missionTimeCallback();
+	}
+}
+
+void MAVLinkEventReceiver::sendModeChange( ROVER_MODE roverMode )
+{
+	if ( _sendModeChangeCallback != NULL )
+	{
+		_sendModeChangeCallback( roverMode );
 	}
 }
 

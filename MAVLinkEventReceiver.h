@@ -31,12 +31,16 @@ public:
 	virtual void onRCChannels( mavlink_rc_channels_t mavlink_rc_channels );
 	virtual void onSystemTime( mavlink_system_time_t mavlink_system_time );
 	virtual void setMissionTimeCallback( uint32_t( *missionTimeCallback ) () );
+	virtual void setSendModeChangeCallback( void(*sendModeChangeCallback) (ROVER_MODE roverMode) );
 
 	virtual void tick();
 
 protected:
 	long long getMissionTime();
+	void sendModeChange( ROVER_MODE roverMode );
+
 	uint32_t( *_missionTimeCallback ) ();
+	void( *_sendModeChangeCallback ) (ROVER_MODE roverMode);
 
 };
 

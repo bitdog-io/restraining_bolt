@@ -13,6 +13,8 @@
  *
  */
 
+
+
 #include "SerialMAVLinkReader.h"
 #include <ArduinoLog.h>
 
@@ -103,6 +105,26 @@ void SerialMAVLinkReader::sendMAVLinkHeartbeat()
 
 	// Pack the MAVLink heartbeat message
 	mavlink_msg_heartbeat_pack( _sysid, _compid, &mavlinkMessage, _type, _autopilotType, _systemMode, _customMode, _systemState );
+
+	// Copy the message to the send buffer
+	messageLength = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
+
+	// Write buffer containing heartbeat message
+	_serial->write( buffer, messageLength );
+
+
+}
+
+void SerialMAVLinkReader::sendChangeMode( ROVER_MODE roverMode)
+{
+	uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+	uint16_t messageLength = 0;
+	mavlink_message_t mavlinkMessage;
+
+	//Log.trace( "Sending heartbeat message" );
+
+	// Pack the MAVLink change mode message
+	mavlink_msg_set_mode_pack( _sysid, _compid, &mavlinkMessage, _flight_controller_sysid,  roverMode, 1 );
 
 	// Copy the message to the send buffer
 	messageLength = mavlink_msg_to_send_buffer( buffer, &mavlinkMessage );
