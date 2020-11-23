@@ -84,5 +84,7 @@ PWM signal to the RC relay and power the rover.
  - Sending back MAVLink updates from Restraining Bolt to listening base stations might be useful .
 
 
+## Demo
+[Video of project hardware](https://www.youtube.com/watch?v=QM2f_M2HsgQ)
 
   
