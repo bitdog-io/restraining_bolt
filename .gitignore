@@ -22,3 +22,5 @@ restraining_bolt/restraining_bolt.code-workspace
 *.user
 /sdcard/sounds/mp3
 /sdcard/sounds/wav
+/Debug
+/libraries/libraries
